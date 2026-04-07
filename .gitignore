@@ -1,6 +1,9 @@
-/Library/
-/Temp/
-/Obj/
-/Build/
-/Logs/
-/UserSettings/
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+/*.csproj
+/*.sln
+*.userprefs

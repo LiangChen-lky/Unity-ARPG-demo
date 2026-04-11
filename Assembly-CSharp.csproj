@@ -59,6 +59,7 @@
     <Compile Include="Assets\Scrips\Characters\Player\Data\States\Grounded\Stopping\PlayerStopData.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\Data\States\Grounded\PlayerGroundedData.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\Data\States\Grounded\PlayerDashData.cs" />
+    <Compile Include="Assets\Scrips\Weapons\Swords\IWeaponController.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\Statemachine\Movement\State\Grounded\Stopping\PlayerHardStoppingState.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\Statemachine\Movement\PlayerMovementStateMachine.cs" />
     <Compile Include="Assets\Scrips\StateMachine\IState.cs" />
@@ -73,15 +74,12 @@
     <Compile Include="Assets\Scrips\Characters\Player\Statemachine\Attack\State\PlayerAttackState.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\AttackSystem\Effect\EffectBase.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\Statemachine\Movement\State\Grounded\Moving\PlayerRunningState.cs" />
-    <Compile Include="Assets\Scrips\Weapons\IWeapon.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\Statemachine\Movement\State\Grounded\PlayerIdlingState.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\Utilities\Input\PlayerInput.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\AttackSystem\MoveOffsetDirection.cs" />
-    <Compile Include="Assets\Scrips\Weapons\Swords\StateMachine\States\SwordIdlingState.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\Data\States\Attack\Combo1\PlayerCombo1Data.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\Statemachine\Movement\State\Grounded\Moving\PlayerSprintingState.cs" />
     <Compile Include="Assets\Scrips\Weapons\Data\ScriptableObject\WeaponSO.cs" />
-    <Compile Include="Assets\Scrips\Weapons\Swords\StateMachine\SwordStateMachine.cs" />
     <Compile Include="Assets\Scrips\Weapons\Data\WeaponReusableData.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\Statemachine\Movement\State\AirBorne\PlayerFallingState.cs" />
     <Compile Include="Assets\Scrips\Utilities\Colliders\Character\Player\CapsuleColliderUtility.cs" />
@@ -90,7 +88,6 @@
     <Compile Include="Assets\InputActions\Character\Player\PlayerInputAction.cs" />
     <Compile Include="Assets\Scrips\Data\Colliders\CapsuleColliderData.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\Data\States\PlayerRotationData.cs" />
-    <Compile Include="Assets\Scrips\Weapons\Swords\StateMachine\States\SwordBaseState.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\Statemachine\Attack\State\PlayerAttackMainState.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\Player.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\Statemachine\Movement\State\AirBorne\PlayerAirborneState.cs" />
@@ -104,10 +101,10 @@
     <Compile Include="Assets\Scrips\Characters\Player\Statemachine\Movement\State\Grounded\Stopping\PlayerMediumStoppingState.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\Utilities\Aniamtions\PlayerAnimationEventTrigger.cs" />
     <Compile Include="Assets\Scrips\Utilities\Colliders\ITriggerHandler.cs" />
-    <Compile Include="Assets\Scrips\Weapons\Swords\StateMachine\States\SwordAttackingState.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\Statemachine\Attack\PlayerAttackStateMachine.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\Statemachine\Movement\State\Grounded\PlayerDashingState.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\Data\Layers\PlayerLayerData.cs" />
+    <Compile Include="Assets\Scrips\Weapons\Swords\WeaponState.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\Data\States\PlayerReusableData.cs" />
     <None Include="Assets\Shaders\UnityURPToonLitShaderExample-master\NiloOutlineUtil.hlsl" />
     <None Include="Assets\Shaders\UnityURPToonLitShaderExample-master\SimpleURPToonLitOutlineExample.shader" />

@@ -39,4 +39,14 @@ MonoBehaviour:
     MoveOffsetDirection: 0
     Scale: 0
     Duration: 0
-  TargetMoveOffsetConfig: []
+  TargetMoveOffsetConfig:
+  - StartTime: 0
+    MoveCurve:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 0
+      m_PostInfinity: 0
+      m_RotationOrder: 0
+    MoveOffsetDirection: 0
+    Scale: 0
+    Duration: 0

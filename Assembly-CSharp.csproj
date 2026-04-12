@@ -46,7 +46,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Scrips\Characters\Player\Statemachine\Movement\State\Grounded\Stopping\PlayerStoppingState.cs" />
-    <Compile Include="Assets\Scrips\Characters\Player\Statemachine\Attack\State\PlayerCombo1.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\Statemachine\Movement\State\AirBorne\PlayerJumpingState.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\AttackSystem\Effect\HitFXConfig.cs" />
     <Compile Include="Assets\Scrips\Data\Colliders\DefaultColliderData.cs" />
@@ -67,17 +66,17 @@
     <Compile Include="Assets\Scrips\Data\Colliders\SlopeData.cs" />
     <Compile Include="Assets\Scrips\Weapons\Swords\Sword.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\Data\States\Airborne\PlayerJumpData.cs" />
-    <Compile Include="Assets\Scrips\Characters\Player\AttackSystem\SO\ComboList.cs" />
     <Compile Include="Assets\Scrips\StateMachine\StateMachine.cs" />
+    <Compile Include="Assets\Scrips\Characters\Player\Data\States\Attack\PlayerAttackData.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\AttackSystem\Effect\ToolManager.cs" />
-    <Compile Include="Assets\Scrips\Characters\Player\AttackSystem\SO\ComboConfig.cs" />
-    <Compile Include="Assets\Scrips\Characters\Player\Statemachine\Attack\State\PlayerAttackState.cs" />
+    <Compile Include="Assets\Scrips\Characters\Player\Data\ScriptableObject\Combo\ComboConfig.cs" />
+    <Compile Include="Assets\Scrips\Characters\Player\Statemachine\Movement\State\Attack\PlayerAttackState.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\AttackSystem\Effect\EffectBase.cs" />
+    <Compile Include="Assets\Scrips\Characters\Player\Data\ScriptableObject\Combo\ComboList.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\Statemachine\Movement\State\Grounded\Moving\PlayerRunningState.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\Statemachine\Movement\State\Grounded\PlayerIdlingState.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\Utilities\Input\PlayerInput.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\AttackSystem\MoveOffsetDirection.cs" />
-    <Compile Include="Assets\Scrips\Characters\Player\Data\States\Attack\Combo1\PlayerCombo1Data.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\Statemachine\Movement\State\Grounded\Moving\PlayerSprintingState.cs" />
     <Compile Include="Assets\Scrips\Weapons\Data\ScriptableObject\WeaponSO.cs" />
     <Compile Include="Assets\Scrips\Weapons\Data\WeaponReusableData.cs" />
@@ -88,7 +87,6 @@
     <Compile Include="Assets\InputActions\Character\Player\PlayerInputAction.cs" />
     <Compile Include="Assets\Scrips\Data\Colliders\CapsuleColliderData.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\Data\States\PlayerRotationData.cs" />
-    <Compile Include="Assets\Scrips\Characters\Player\Statemachine\Attack\State\PlayerAttackMainState.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\Player.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\Statemachine\Movement\State\AirBorne\PlayerAirborneState.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\Data\States\Grounded\PlayerIdleData.cs" />
@@ -101,7 +99,6 @@
     <Compile Include="Assets\Scrips\Characters\Player\Statemachine\Movement\State\Grounded\Stopping\PlayerMediumStoppingState.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\Utilities\Aniamtions\PlayerAnimationEventTrigger.cs" />
     <Compile Include="Assets\Scrips\Utilities\Colliders\ITriggerHandler.cs" />
-    <Compile Include="Assets\Scrips\Characters\Player\Statemachine\Attack\PlayerAttackStateMachine.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\Statemachine\Movement\State\Grounded\PlayerDashingState.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\Data\Layers\PlayerLayerData.cs" />
     <Compile Include="Assets\Scrips\Weapons\Swords\WeaponState.cs" />

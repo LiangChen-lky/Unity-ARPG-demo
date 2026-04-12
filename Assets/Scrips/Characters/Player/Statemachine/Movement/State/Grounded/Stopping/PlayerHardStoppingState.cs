@@ -10,7 +10,7 @@ public class PlayerHardStoppingState : PlayerStoppingState
     {
         base.Enter();
         
-        stateMachine.Player.Animator.Play(AnimationData.GetAnimationHash(AnimationData.HardStoppingAnimationName));
+        stateMachine.Player.Animator.Play(AnimationData.HardStoppingAnimationHash);
 
         stateMachine.ReusableData.MovementDecelerationForce = GroundedData.StopData.HardDecelerationForce;
         stateMachine.ReusableData.CurrentJumpForce = AirborneData.JumpData.StrongForce;

@@ -17,7 +17,7 @@ public class PlayerMovementStateMachine : StateMachine
     public PlayerJumpingState JumpingState { get; }
     public PlayerFallingState FallingState { get; }
     
-    public PlayerAttackStateMachine AttackStateMachine { get; }
+    public PlayerAttackState AttackState { get; }
     
     public PlayerMovementStateMachine(Player player)
     {
@@ -35,8 +35,8 @@ public class PlayerMovementStateMachine : StateMachine
 
         JumpingState = new PlayerJumpingState(this);
         FallingState = new PlayerFallingState(this);
-
-        AttackStateMachine = new PlayerAttackStateMachine(this);
+        
+        AttackState = new PlayerAttackState(this);
     }
 
     public void OnTriggerEnter(Collider collider)

@@ -15,7 +15,7 @@ public class PlayerRunningState : PlayerMovingState
 
         stateMachine.ReusableData.MovementSpeedModifier = GroundedData.RunData.SpeedModifier;
         stateMachine.ReusableData.CurrentJumpForce = AirborneData.JumpData.MediumForce;
-        stateMachine.Player.Animator.CrossFade(AnimationData.GetAnimationHash(AnimationData.RunningAnimationName),
+        stateMachine.Player.Animator.CrossFade(AnimationData.RunningAnimationHash,
             0);
     }
 

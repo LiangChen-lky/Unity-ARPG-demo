@@ -11,7 +11,7 @@ public class PlayerFallingState : PlayerAirborneState
         base.Enter();
         
         // stateMachine.Player.Animator.Play(AnimationData.GetAnimationHash(AnimationData.FallingAnimationName));
-        stateMachine.Player.Animator.CrossFade(AnimationData.GetAnimationHash(AnimationData.FallingAnimationName),
+        stateMachine.Player.Animator.CrossFade(AnimationData.FallingAnimationHash,
             0.2f);
     }
 

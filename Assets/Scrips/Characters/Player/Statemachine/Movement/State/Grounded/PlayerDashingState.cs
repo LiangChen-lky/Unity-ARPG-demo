@@ -20,7 +20,7 @@ public class PlayerDashingState : PlayerGroundedState
 
         stateMachine.ReusableData.MovementSpeedModifier = GroundedData.DashData.SpeedModifier;
         stateMachine.ReusableData.CurrentJumpForce = AirborneData.JumpData.StrongForce;
-        stateMachine.Player.Animator.CrossFade(AnimationData.GetAnimationHash(AnimationData.DashingAnimationName),
+        stateMachine.Player.Animator.CrossFade(AnimationData.DashingAnimationHash,
             0);
         
         SetRotationData(GroundedData.DashData.RotationData);

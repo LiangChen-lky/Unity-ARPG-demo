@@ -16,7 +16,7 @@ public class PlayerSprintingState : PlayerMovingState
     {
         base.Enter();
 
-        stateMachine.Player.Animator.Play(AnimationData.GetAnimationHash(AnimationData.SprintingAnimationName));
+        stateMachine.Player.Animator.Play(AnimationData.SprintingAnimationHash);
         stateMachine.ReusableData.MovementSpeedModifier = GroundedData.SprintData.SpeedModifier;
         stateMachine.ReusableData.CurrentJumpForce = AirborneData.JumpData.StrongForce;
 

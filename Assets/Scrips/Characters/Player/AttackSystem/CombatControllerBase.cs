@@ -217,17 +217,3 @@ public class CombatControllerBase : MonoBehaviour
         nextComboIndex = 0;
     }
 }
-
-public class RunningEventIndex
-{
-    public int AttackDetectionIndex { get; set; } = 0;
-    public int FXIndex { get; set; } = 0;
-    public int AttackFeedbackIndex { get; set; } = 0;
-    
-    public void Reset()
-    {
-        AttackDetectionIndex = 0;
-        FXIndex = 0;
-        AttackFeedbackIndex = 0;
-    }
-}

@@ -18,7 +18,7 @@ public class PlayerJumpingState : PlayerAirborneState
         stateMachine.ReusableData.MovementSpeedModifier = 0f;
         SetRotationData(AirborneData.JumpData.RotationData);
         
-        stateMachine.Player.Animator.Play(AnimationData.GetAnimationHash(AnimationData.JumpingAnimationName));
+        stateMachine.Player.Animator.Play(AnimationData.JumpingAnimationHash);
 
         shouldKeepRotating = stateMachine.ReusableData.MovementInput != Vector2.zero;
 

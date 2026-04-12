@@ -280,9 +280,9 @@ public class PlayerMovementState : IState, ITriggerHandler
         stateMachine.ChangeState(stateMachine.RunningState);
     }
     
-    private void OnAttackStarted(InputAction.CallbackContext context)
+    protected virtual void OnAttackStarted(InputAction.CallbackContext context)
     {
-        stateMachine.ChangeState(stateMachine.AttackStateMachine.AttackState);
+        stateMachine.ChangeState(stateMachine.AttackState);
     }
     #endregion
 }

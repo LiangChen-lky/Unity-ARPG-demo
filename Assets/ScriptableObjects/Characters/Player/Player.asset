@@ -14,15 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   <AnimationData>k__BackingField:
     <TransitionDuration>k__BackingField: 0.1
-    <IdlingAnimationName>k__BackingField: Idle
-    <RunningAnimationName>k__BackingField: Run
-    <DashingAnimationName>k__BackingField: Dash
-    <SprintingAnimationName>k__BackingField: Sprint
-    <MediumStoppingAnimationName>k__BackingField: MediumStop
-    <HardStoppingAnimationName>k__BackingField: HardStop
-    <JumpingAnimationName>k__BackingField: Jump
-    <FallingAnimationName>k__BackingField: Fall
-    <Combo1AnimationName>k__BackingField: Standing Melee Attack Downward
+    idlingAnimationName: Idle
+    runningAnimationName: Run
+    dashingAnimationName: Dash
+    sprintingAnimationName: Sprint
+    mediumStoppingAnimationName: MediumStop
+    hardStoppingAnimationName: HardStop
+    jumpingAnimationName: Jump
+    fallingAnimationName: Fall
   <GroundedData>k__BackingField:
     <BaseSpeed>k__BackingField: 5
     <SlopeSpeedAngle>k__BackingField:
@@ -196,3 +195,11 @@ MonoBehaviour:
         m_PostInfinity: 2
         m_RotationOrder: 4
       <JumpToGroundRayDistance>k__BackingField: 2
+  <AttackData>k__BackingField:
+    <CurrentComboList>k__BackingField: {fileID: 11400000, guid: 494955d4ca4a34b4b8ddde08943153b4,
+      type: 2}
+    <TargetLayer>k__BackingField:
+      serializedVersion: 2
+      m_Bits: 256
+    <HitFXList>k__BackingField: []
+    <FXPositionList>k__BackingField: []

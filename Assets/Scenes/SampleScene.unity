@@ -9513,7 +9513,6 @@ GameObject:
   - component: {fileID: 727762873}
   - component: {fileID: 727762875}
   - component: {fileID: 727762874}
-  - component: {fileID: 727762876}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -9629,25 +9628,6 @@ CapsuleCollider:
   m_Height: 1.2
   m_Direction: 1
   m_Center: {x: 0, y: 1, z: 0}
---- !u!114 &727762876
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 727762870}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 96b71a1d33a5f644a8aedfc063bdbf2f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  <CurrentComboList>k__BackingField: {fileID: 11400000, guid: 494955d4ca4a34b4b8ddde08943153b4,
-    type: 2}
-  <TargetLayer>k__BackingField:
-    serializedVersion: 2
-    m_Bits: 256
-  <HitFXList>k__BackingField: []
-  <FXPositionList>k__BackingField: []
 --- !u!4 &728131425 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3214405113040960797, guid: f8a70080ed072c5488e9336df5319d2b,
@@ -10530,6 +10510,7 @@ MonoBehaviour:
   <WeaponAttackingPosition>k__BackingField: {fileID: 1450742420}
   <Data>k__BackingField: {fileID: 11400000, guid: 87d589e3bfc76734cad638ec4a0dedfe,
     type: 2}
+  inputSource: {fileID: 0}
 --- !u!114 &975131840
 MonoBehaviour:
   m_ObjectHideFlags: 0

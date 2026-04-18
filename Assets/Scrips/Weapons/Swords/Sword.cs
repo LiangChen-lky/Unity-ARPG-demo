@@ -8,7 +8,7 @@ public class Sword : MonoBehaviour, IWeaponController
     [field: SerializeField] public WeaponSO Data { get; private set; }
 
     [SerializeField] private PlayerInput inputSource;
-    public PlayerInput PlayerInput { get; private set; }
+    private PlayerInput playerInput;
 
     private WeaponState currentState = WeaponState.Idle;
     private Vector3 facingDirection = Vector3.forward;
@@ -21,10 +21,10 @@ public class Sword : MonoBehaviour, IWeaponController
     #region Mono Methods
     private void Awake()
     {
-        PlayerInput = inputSource != null ? inputSource : GetComponentInParent<PlayerInput>();
-        if (PlayerInput != null)
+        playerInput = inputSource != null ? inputSource : GetComponentInParent<PlayerInput>();
+        if (playerInput != null)
         {
-            PlayerInput.EnsureInitialized();
+            playerInput.EnsureInitialized();
         }
     }
 
@@ -51,7 +51,12 @@ public class Sword : MonoBehaviour, IWeaponController
     private void OnDisable()
     {
         UnregisterInputCallbacks();
-        CancelAttack();
+        // 编辑器模式下不执行取消攻击
+        if (!Application.isPlaying)
+        {
+            CancelAttack();
+        }
+        
     }
 
     private void OnDestroy()
@@ -119,27 +124,27 @@ public class Sword : MonoBehaviour, IWeaponController
 
     private void RegisterInputCallbacks()
     {
-        if (inputCallbacksRegistered || PlayerInput == null)
+        if (inputCallbacksRegistered || playerInput == null)
         {
             return;
         }
 
-        PlayerInput.PlayerActions.Attack.started += OnAttackStarted;
-        PlayerInput.PlayerActions.Dash.started += OnCancelRequested;
-        PlayerInput.PlayerActions.Jump.started += OnCancelRequested;
+        playerInput.PlayerActions.Attack.started += OnAttackStarted;
+        playerInput.PlayerActions.Dash.started += OnCancelRequested;
+        playerInput.PlayerActions.Jump.started += OnCancelRequested;
         inputCallbacksRegistered = true;
     }
 
     private void UnregisterInputCallbacks()
     {
-        if (!inputCallbacksRegistered || PlayerInput == null)
+        if (!inputCallbacksRegistered || playerInput == null)
         {
             return;
         }
 
-        PlayerInput.PlayerActions.Attack.started -= OnAttackStarted;
-        PlayerInput.PlayerActions.Dash.started -= OnCancelRequested;
-        PlayerInput.PlayerActions.Jump.started -= OnCancelRequested;
+        playerInput.PlayerActions.Attack.started -= OnAttackStarted;
+        playerInput.PlayerActions.Dash.started -= OnCancelRequested;
+        playerInput.PlayerActions.Jump.started -= OnCancelRequested;
         inputCallbacksRegistered = false;
     }
 
@@ -166,6 +171,7 @@ public class Sword : MonoBehaviour, IWeaponController
     {
         if (WeaponIdlingPosition == null)
         {
+            Debug.LogError("WeaponIdlingPosition is not set");
             return;
         }
 
@@ -177,6 +183,7 @@ public class Sword : MonoBehaviour, IWeaponController
     {
         if (WeaponAttackingPosition == null)
         {
+            Debug.LogError("WeaponAttackingPosition is not set");
             return;
         }
 
@@ -188,6 +195,7 @@ public class Sword : MonoBehaviour, IWeaponController
     {
         if (WeaponIdlingPosition == null)
         {
+            Debug.LogError("WeaponIdlingPosition is not set");
             return;
         }
 

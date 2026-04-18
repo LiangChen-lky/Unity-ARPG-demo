@@ -1,0 +1,6 @@
+# Unity 自动生成的文件
+*.meta
+Library/
+Temp/
+Logs/
+Build/

@@ -57,6 +57,11 @@ public class Player : MonoBehaviour
     {
         movementStateMachine.OnTriggerEnter(collider);
     }
+    
+    private void OnTriggerExit(Collider collider)
+    {
+        movementStateMachine.OnTriggerExit(collider);
+    }
 
     public void OnMovementStateAnimationEnterEvent()
     {

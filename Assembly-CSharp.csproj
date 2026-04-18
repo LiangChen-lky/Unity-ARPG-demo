@@ -69,6 +69,7 @@
     <Compile Include="Assets\Scrips\StateMachine\StateMachine.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\Data\States\Attack\PlayerAttackData.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\AttackSystem\Effect\ToolManager.cs" />
+    <Compile Include="Assets\Scrips\Core\Events\Bus\EventBus.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\Data\ScriptableObject\Combo\ComboConfig.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\Statemachine\Movement\State\Attack\PlayerAttackState.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\AttackSystem\Effect\EffectBase.cs" />
@@ -100,8 +101,8 @@
     <Compile Include="Assets\Scrips\Characters\Player\Statemachine\Movement\State\Grounded\Stopping\PlayerMediumStoppingState.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\Utilities\Aniamtions\PlayerAnimationEventTrigger.cs" />
     <Compile Include="Assets\Scrips\Utilities\Colliders\ITriggerHandler.cs" />
+    <Compile Include="Assets\Scrips\Characters\Player\Statemachine\Movement\State\Grounded\Recovery\PlayerAttackRecoveryState.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\Statemachine\Movement\State\Grounded\PlayerDashingState.cs" />
-    <Compile Include="Assets\Scrips\Core\Events\EventBus.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\Data\Layers\PlayerLayerData.cs" />
     <Compile Include="Assets\Scrips\Weapons\Swords\WeaponState.cs" />
     <Compile Include="Assets\Scrips\Characters\Player\Data\States\PlayerReusableData.cs" />

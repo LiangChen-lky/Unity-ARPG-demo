@@ -71,9 +71,14 @@ public class PlayerMovementState : IState, ITriggerHandler
 
     #region ITrigger Methods
 
-    public void OnTriggerEnter(Collider collider)
+    public virtual void OnTriggerEnter(Collider collider)
     {
         OnContactWithGround();
+    }
+
+    public virtual void OnTriggerExit(Collider collider)
+    {
+        OnExitWithGround();
     }
 
     #endregion
@@ -249,6 +254,11 @@ public class PlayerMovementState : IState, ITriggerHandler
     }
     
     protected virtual void OnContactWithGround()
+    {
+        
+    }
+
+    protected virtual void OnExitWithGround()
     {
         
     }

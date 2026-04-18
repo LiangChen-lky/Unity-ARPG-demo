@@ -64,9 +64,20 @@ public class PlayerGroundedState : PlayerMovementState
         return slopeSpeedModifier;
     }
 
+    private void OnFalling()
+    {
+        stateMachine.ChangeState(stateMachine.FallingState);
+    }
     #endregion
 
     #region Reusable Methods
+
+    protected override void OnExitWithGround()
+    {
+        base.OnExitWithGround();
+
+        OnFalling();
+    }
 
     protected override void AddInputActionCallbacks()
     {

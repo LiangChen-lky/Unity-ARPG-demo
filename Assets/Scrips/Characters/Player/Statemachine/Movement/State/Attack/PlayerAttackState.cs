@@ -15,9 +15,7 @@ public class PlayerAttackState : PlayerGroundedState
     private Coroutine stopComboCoroutine;
     private Coroutine executeMoveOffsetCoroutine;
     private RunningEventIndex runningEventIndex;
-    
-    private bool canExitToMovement;
-    private bool comboInputBuffered;
+    private bool hasHandledAttackExit;
     
     public PlayerAttackState(PlayerMovementStateMachine stateMachine) : base(stateMachine)
     {
@@ -34,8 +32,7 @@ public class PlayerAttackState : PlayerGroundedState
         
         runningEventIndex = new RunningEventIndex();
         canExecuteCombo = true;
-        canExitToMovement = false;
-        comboInputBuffered = false;
+        hasHandledAttackExit = false;
         
         ExecuteCombo();
     }
@@ -45,6 +42,7 @@ public class PlayerAttackState : PlayerGroundedState
         base.Update();
         
         RunEvent();
+        TryHandleAttackAnimationExit();
     }
 
     #endregion
@@ -111,8 +109,7 @@ public class PlayerAttackState : PlayerGroundedState
         UpdateComboIndex();
         
         canExecuteCombo = false;
-        canExitToMovement = false;
-        comboInputBuffered = false;
+        hasHandledAttackExit = false;
         // 冷却时间结束后才可以开始下一combo
         stateMachine.Player.StartCoroutine(ExecuteComboCold(attackData.CurrentComboList.TryGetComboColdTime(currentComboIndex)));
         
@@ -234,39 +231,38 @@ public class PlayerAttackState : PlayerGroundedState
         Debug.Log("Attack input received");
         if (canExecuteCombo)
         {
-            comboInputBuffered = true;
             ExecuteCombo();
         }
     }
 
     public override void OnAnimationExitEnvent()
     {
-        if (comboInputBuffered)
-        {
-            comboInputBuffered = false;
-            return;
-        }
-
-        canExitToMovement = true;
-        TryTransitionToMovement();
+        HandleAttackFinished();
     }
 
-    private void TryTransitionToMovement()
+    private void TryHandleAttackAnimationExit()
     {
-        if (!canExitToMovement)
+        if (hasHandledAttackExit)
         {
             return;
         }
 
-        Vector2 movementInput = stateMachine.ReusableData.MovementInput;
-        if (movementInput != Vector2.zero)
+        AnimatorStateInfo animatorStateInfo = stateMachine.Player.Animator.GetCurrentAnimatorStateInfo(0);
+        if (!stateMachine.Player.Animator.IsInTransition(0) && animatorStateInfo.normalizedTime >= 1f)
         {
-            stateMachine.ChangeState(stateMachine.RunningState);
+            HandleAttackFinished();
         }
-        else
+    }
+
+    private void HandleAttackFinished()
+    {
+        if (hasHandledAttackExit)
         {
-            stateMachine.ChangeState(stateMachine.IdlingState);
+            return;
         }
+
+        hasHandledAttackExit = true;
+        stateMachine.ChangeState(stateMachine.AttackRecoveryState);
     }
 
     #endregion

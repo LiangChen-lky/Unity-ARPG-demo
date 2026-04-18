@@ -1,9 +1,8 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 
-public class PlayerIdlingState : PlayerGroundedState
+public class PlayerAttackRecoveryState : PlayerGroundedState
 {
-    public PlayerIdlingState(PlayerMovementStateMachine stateMachine) : base(stateMachine)
+    public PlayerAttackRecoveryState(PlayerMovementStateMachine stateMachine) : base(stateMachine)
     {
     }
 
@@ -13,12 +12,10 @@ public class PlayerIdlingState : PlayerGroundedState
     {
         base.Enter();
 
-        ResetVelocity();
-        
+        // 保持攻击结束时的姿势，不再切到待机动画。
         stateMachine.ReusableData.MovementSpeedModifier = 0f;
         stateMachine.ReusableData.CurrentJumpForce = AirborneData.JumpData.StationaryForce;
-
-        stateMachine.Player.Animator.CrossFade(AnimationData.IdlingAnimationHash, AnimationData.TransitionDuration);
+        ResetVelocity();
     }
 
     public override void Update()
@@ -29,7 +26,7 @@ public class PlayerIdlingState : PlayerGroundedState
         {
             return;
         }
-        
+
         stateMachine.ChangeState(stateMachine.RunningState);
     }
 

@@ -16,6 +16,9 @@ public class PlayerAttackState : PlayerGroundedState
     private Coroutine executeMoveOffsetCoroutine;
     private RunningEventIndex runningEventIndex;
     
+    private bool canExitToMovement;
+    private bool comboInputBuffered;
+    
     public PlayerAttackState(PlayerMovementStateMachine stateMachine) : base(stateMachine)
     {
         attackData = stateMachine.Player.Data.AttackData;
@@ -31,6 +34,8 @@ public class PlayerAttackState : PlayerGroundedState
         
         runningEventIndex = new RunningEventIndex();
         canExecuteCombo = true;
+        canExitToMovement = false;
+        comboInputBuffered = false;
         
         ExecuteCombo();
     }
@@ -60,8 +65,8 @@ public class PlayerAttackState : PlayerGroundedState
                                       stateMachine.Player.transform.right * attackDetectionConfig.Position.x;
                 // 执行攻击检测
                 // OverlapBox后续可以优化
-                var targetList = Physics.OverlapBox(stateMachine.Player.transform.position + boxPosition,
-                    attackDetectionConfig.Scale, Quaternion.identity, attackData.TargetLayer);
+                // var targetList = Physics.OverlapBox(stateMachine.Player.transform.position + boxPosition,
+                //     attackDetectionConfig.Scale, Quaternion.identity, attackData.TargetLayer);
                 // foreach (var target in targetList)
                 // {
                 //     // 执行受击
@@ -106,6 +111,8 @@ public class PlayerAttackState : PlayerGroundedState
         UpdateComboIndex();
         
         canExecuteCombo = false;
+        canExitToMovement = false;
+        comboInputBuffered = false;
         // 冷却时间结束后才可以开始下一combo
         stateMachine.Player.StartCoroutine(ExecuteComboCold(attackData.CurrentComboList.TryGetComboColdTime(currentComboIndex)));
         
@@ -227,7 +234,38 @@ public class PlayerAttackState : PlayerGroundedState
         Debug.Log("Attack input received");
         if (canExecuteCombo)
         {
+            comboInputBuffered = true;
             ExecuteCombo();
+        }
+    }
+
+    public override void OnAnimationExitEnvent()
+    {
+        if (comboInputBuffered)
+        {
+            comboInputBuffered = false;
+            return;
+        }
+
+        canExitToMovement = true;
+        TryTransitionToMovement();
+    }
+
+    private void TryTransitionToMovement()
+    {
+        if (!canExitToMovement)
+        {
+            return;
+        }
+
+        Vector2 movementInput = stateMachine.ReusableData.MovementInput;
+        if (movementInput != Vector2.zero)
+        {
+            stateMachine.ChangeState(stateMachine.RunningState);
+        }
+        else
+        {
+            stateMachine.ChangeState(stateMachine.IdlingState);
         }
     }
 

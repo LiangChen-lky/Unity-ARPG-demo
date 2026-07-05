@@ -104,6 +104,7 @@ public class PlayerAttackState : PlayerGroundedState
         
         currentComboIndex = nextComboIndex;
         
+        Debug.Log(currentComboIndex);
         stateMachine.Player.Animator.CrossFadeInFixedTime(attackData.CurrentComboList.TryGetComboName(currentComboIndex), 0.1555f, 0, 0);
         
         UpdateComboIndex();
@@ -213,7 +214,7 @@ public class PlayerAttackState : PlayerGroundedState
     
     private IEnumerator StopCombo(float coldTime)
     {
-        float time = coldTime * 1.2f;
+        float time = coldTime * 2f;
         while (time > 0f)
         {
             yield return null;

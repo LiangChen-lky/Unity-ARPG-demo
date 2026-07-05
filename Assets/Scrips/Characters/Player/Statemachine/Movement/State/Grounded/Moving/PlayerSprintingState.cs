@@ -5,6 +5,7 @@ public class PlayerSprintingState : PlayerMovingState
 {
     private float startTime;
     private bool keepSprint;
+    private bool shouldResetSprintState;
     
     public PlayerSprintingState(PlayerMovementStateMachine stateMachine) : base(stateMachine)
     {
@@ -40,6 +41,17 @@ public class PlayerSprintingState : PlayerMovingState
         StopSprint();
     }
 
+    public override void Exit()
+    {
+        base.Exit();
+        
+        if (shouldResetSprintState)
+        {
+            keepSprint = false;
+            stateMachine.ReusableData.ShouldSprint = false;
+        }
+    }
+
     #endregion
 
     #region Main Methods
@@ -57,6 +69,13 @@ public class PlayerSprintingState : PlayerMovingState
     #endregion
     
     #region Reusable Methods
+
+    protected override void OnFalling()
+    {
+        shouldResetSprintState = false;
+        
+        base.OnFalling();
+    }
 
     protected override void AddInputActionCallbacks()
     {
@@ -86,6 +105,16 @@ public class PlayerSprintingState : PlayerMovingState
     private void OnSprintPerformed(InputAction.CallbackContext obj)
     {
         keepSprint = true;
+        
+        stateMachine.ReusableData.ShouldSprint = true;
     }
+
+    protected override void OnJumpStarted(InputAction.CallbackContext context)
+    {
+        shouldResetSprintState = false;
+        
+        base.OnJumpStarted(context);
+    }
+
     #endregion
 }

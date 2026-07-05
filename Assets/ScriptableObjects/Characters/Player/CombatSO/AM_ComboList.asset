@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 91018638f65ee624bbd3459038b69f9b, type: 3}
+  m_Name: AM_ComboList
+  m_EditorClassIdentifier: 
+  <ComboConfigs>k__BackingField:
+  - {fileID: 11400000, guid: 1aaca8e3d08527e4583d4b8211af8380, type: 2}
+  - {fileID: 11400000, guid: fc6a5fc07dd9a0f43a0cad9b57b48334, type: 2}
+  - {fileID: 11400000, guid: e17da8a3650822c4e87948079697f79b, type: 2}
+  - {fileID: 11400000, guid: d6304ac8bb94a01499d9aec602be54e2, type: 2}
+  - {fileID: 11400000, guid: ea66055d7f19ca545ab9a826db8b7a15, type: 2}

@@ -6,6 +6,15 @@ public class PlayerAirborneState : PlayerMovementState
 
     #region IState Methods
 
+    public override void Enter()
+    {
+        base.Enter();
+    }
+
+    #endregion
+
+    #region Reusable Methods
+
     protected override void OnContactWithGround()
     {
         stateMachine.ChangeState(stateMachine.IdlingState);

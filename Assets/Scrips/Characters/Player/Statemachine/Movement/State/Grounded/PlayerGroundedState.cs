@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -11,6 +12,13 @@ public class PlayerGroundedState : PlayerMovementState
     }
 
     #region IState Methods
+
+    public override void Enter()
+    {
+        base.Enter();
+        
+        UpdateShouldSprintState();
+    }
 
     public override void PhysicsUpdate()
     {
@@ -63,20 +71,56 @@ public class PlayerGroundedState : PlayerMovementState
         stateMachine.ReusableData.MovementOnSlopeSpeedModifier = slopeSpeedModifier;
         return slopeSpeedModifier;
     }
-
-    private void OnFalling()
+    
+    private void UpdateShouldSprintState()
     {
-        stateMachine.ChangeState(stateMachine.FallingState);
+        if (!stateMachine.ReusableData.ShouldSprint)
+            return;
+        if (stateMachine.ReusableData.MovementInput != Vector2.zero)
+            return;
+
+        stateMachine.ReusableData.ShouldSprint = false;
     }
     #endregion
 
     #region Reusable Methods
 
+    protected void OnMove()
+    {
+        if (stateMachine.ReusableData.ShouldSprint)
+        {
+            stateMachine.ChangeState(stateMachine.SprintingState);
+            return;
+        }
+        stateMachine.ChangeState(stateMachine.RunningState);
+    }
+    
     protected override void OnExitWithGround()
     {
         base.OnExitWithGround();
+        
+        if (IsGroundUnderneath())
+        {
+            return;
+        }
+        
+        Vector3 CapsuleColliderCenterInWorldSpace =
+            stateMachine.Player.ColliderUtility.CapsuleColliderData.Collider.bounds.center;
+        if (Physics.Raycast(
+                CapsuleColliderCenterInWorldSpace -
+                stateMachine.Player.ColliderUtility.CapsuleColliderData.ColliderVerticalExtents, Vector3.down, out _,
+                GroundedData.GroundToFallRayDistance, stateMachine.Player.LayerData.GroundLayer,
+                QueryTriggerInteraction.Ignore)) 
+        {
+            return;
+        }
 
         OnFalling();
+    }
+    
+    protected virtual void OnFalling()
+    {
+        stateMachine.ChangeState(stateMachine.FallingState);
     }
 
     protected override void AddInputActionCallbacks()
@@ -97,6 +141,18 @@ public class PlayerGroundedState : PlayerMovementState
         stateMachine.Player.Input.PlayerActions.Jump.started -= OnJumpStarted;
     }
 
+    private bool IsGroundUnderneath()
+    {
+        BoxCollider groundCheckCollider = stateMachine.Player.ColliderUtility.TriggerColliderData.GroundCheckCollider;
+        Vector3 groundCheckColliderCenterInWorldSpace = groundCheckCollider.bounds.center;
+
+        Collider[] overlappedGroundColliders = Physics.OverlapBox(groundCheckColliderCenterInWorldSpace,
+            groundCheckCollider.bounds.extents, Quaternion.identity, stateMachine.Player.LayerData.GroundLayer,
+            QueryTriggerInteraction.Ignore);
+        
+        return overlappedGroundColliders.Length > 0;
+
+    }
     #endregion
 
     #region Input Methods
@@ -106,7 +162,7 @@ public class PlayerGroundedState : PlayerMovementState
         stateMachine.ChangeState(stateMachine.DashingState);
     }
     
-    private void OnJumpStarted(InputAction.CallbackContext context)
+    protected virtual void OnJumpStarted(InputAction.CallbackContext context)
     {
         stateMachine.ChangeState(stateMachine.JumpingState);
     }

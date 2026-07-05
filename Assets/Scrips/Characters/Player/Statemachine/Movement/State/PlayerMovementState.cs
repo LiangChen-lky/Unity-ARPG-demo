@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -170,6 +171,12 @@ public class PlayerMovementState : IState, ITriggerHandler
     {
         stateMachine.Player.Rigidbody.velocity = Vector3.zero;
     }
+
+    protected void ResetVerticalVelocity()
+    {
+        Vector3 playerHorizontalVelocity = GetPlayerHorizontalVelocity();
+        stateMachine.Player.Rigidbody.velocity = playerHorizontalVelocity;
+    }
     
     protected Vector3 GetTargetRotationDirection(float targetAngle)
     {
@@ -287,7 +294,7 @@ public class PlayerMovementState : IState, ITriggerHandler
     }
     protected virtual void OnMovementStarted(InputAction.CallbackContext context)
     {
-        stateMachine.ChangeState(stateMachine.RunningState);
+        
     }
     
     protected virtual void OnAttackStarted(InputAction.CallbackContext context)

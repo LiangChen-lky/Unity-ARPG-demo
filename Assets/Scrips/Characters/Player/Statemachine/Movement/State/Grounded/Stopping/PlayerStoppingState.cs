@@ -1,3 +1,5 @@
+using UnityEngine.InputSystem;
+
 public class PlayerStoppingState : PlayerGroundedState
 {
     public PlayerStoppingState(PlayerMovementStateMachine stateMachine) : base(stateMachine)
@@ -37,6 +39,13 @@ public class PlayerStoppingState : PlayerGroundedState
     #endregion
     
     #region Reusable Methods
+
+    protected override void OnMovementStarted(InputAction.CallbackContext context)
+    {
+        base.OnMovementStarted(context);
+        
+        OnMove();
+    }
 
     protected override void AddInputActionCallbacks()
     {

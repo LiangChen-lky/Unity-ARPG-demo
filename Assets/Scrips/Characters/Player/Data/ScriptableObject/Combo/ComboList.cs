@@ -3,7 +3,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "ComboList", menuName = "ScriptableObject/Combat/ComboList")]
 public class ComboList : ScriptableObject //招式表
 {
-    [field: SerializeField] public ComboConfig[] ComboConfigs { get;private set; }
+    [field: SerializeField] public ComboConfig[] ComboConfigs { get; private set; }
 
     public int TryGetComboConfigsCount()
     {

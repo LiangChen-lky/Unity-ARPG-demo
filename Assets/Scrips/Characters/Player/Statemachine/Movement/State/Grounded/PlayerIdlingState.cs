@@ -30,7 +30,7 @@ public class PlayerIdlingState : PlayerGroundedState
             return;
         }
         
-        stateMachine.ChangeState(stateMachine.RunningState);
+        OnMove();
     }
 
     #endregion

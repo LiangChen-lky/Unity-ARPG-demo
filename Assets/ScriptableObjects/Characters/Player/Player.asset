@@ -24,6 +24,7 @@ MonoBehaviour:
     fallingAnimationName: Fall
   <GroundedData>k__BackingField:
     <BaseSpeed>k__BackingField: 5
+    <GroundToFallRayDistance>k__BackingField: 1
     <SlopeSpeedAngle>k__BackingField:
       serializedVersion: 2
       m_Curve:
@@ -195,8 +196,10 @@ MonoBehaviour:
         m_PostInfinity: 2
         m_RotationOrder: 4
       <JumpToGroundRayDistance>k__BackingField: 2
+    <FallData>k__BackingField:
+      <FallSpeedLimit>k__BackingField: 15
   <AttackData>k__BackingField:
-    <CurrentComboList>k__BackingField: {fileID: 11400000, guid: 494955d4ca4a34b4b8ddde08943153b4,
+    <CurrentComboList>k__BackingField: {fileID: 11400000, guid: 8ddf8aa22e606de41bbf88e03f8f18f7,
       type: 2}
     <TargetLayer>k__BackingField:
       serializedVersion: 2

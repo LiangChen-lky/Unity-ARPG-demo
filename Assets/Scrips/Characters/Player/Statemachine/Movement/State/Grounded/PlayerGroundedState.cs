@@ -18,6 +18,7 @@ public class PlayerGroundedState : PlayerMovementState
         base.Enter();
         
         UpdateShouldSprintState();
+        UpdateCameraRecenteringState(stateMachine.ReusableData.MovementInput);
     }
 
     public override void PhysicsUpdate()
@@ -68,7 +69,12 @@ public class PlayerGroundedState : PlayerMovementState
     private float SetSlopeSpeedModifierOnAngle(float slopeAngle)
     {
         float slopeSpeedModifier = GroundedData.SlopeSpeedAngle.Evaluate(slopeAngle);
-        stateMachine.ReusableData.MovementOnSlopeSpeedModifier = slopeSpeedModifier;
+        if (!Mathf.Approximately(stateMachine.ReusableData.MovementOnSlopeSpeedModifier, slopeSpeedModifier))
+        {
+            stateMachine.ReusableData.MovementOnSlopeSpeedModifier = slopeSpeedModifier;
+            UpdateCameraRecenteringState(stateMachine.ReusableData.MovementInput);
+        }
+
         return slopeSpeedModifier;
     }
     
@@ -85,13 +91,20 @@ public class PlayerGroundedState : PlayerMovementState
 
     #region Reusable Methods
 
-    protected void OnMove()
+    protected virtual void OnMove()
     {
         if (stateMachine.ReusableData.ShouldSprint)
         {
             stateMachine.ChangeState(stateMachine.SprintingState);
             return;
         }
+
+        if (stateMachine.ReusableData.ShouldWalk)
+        {
+            stateMachine.ChangeState(stateMachine.WalkingState);
+            return;
+        }
+
         stateMachine.ChangeState(stateMachine.RunningState);
     }
     

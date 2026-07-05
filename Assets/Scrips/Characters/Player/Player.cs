@@ -9,6 +9,9 @@ public class Player : MonoBehaviour
     [field: Header("Collisions")]
     [field: SerializeField] public PlayerCapsuleColliderUtility ColliderUtility { get; private set; }
     [field: SerializeField] public PlayerLayerData LayerData { get; private set; }
+
+    [field: Header("Cameras")]
+    [field: SerializeField] public PlayerCameraUtility CameraUtility { get; private set; }
     
     public Animator Animator { get; private set; }
     public PlayerInput Input { get; private set; }
@@ -25,6 +28,8 @@ public class Player : MonoBehaviour
         
         ColliderUtility.Initialize(gameObject);
         ColliderUtility.CalculateCapsuleColliderDimensions();
+
+        CameraUtility?.Initialize();
         
         if (Camera.main != null) MainCameraTransform = Camera.main.transform;
 

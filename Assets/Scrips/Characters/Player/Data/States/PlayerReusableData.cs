@@ -10,6 +10,7 @@ public class PlayerReusableData
     
     public Vector3 CurrentJumpForce { get; set; }
     
+    public bool ShouldWalk { get; set; }
     public bool ShouldSprint { get; set; }
     
     private Vector3 currentTargetRotation;

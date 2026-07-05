@@ -16,6 +16,15 @@
                     "initialStateCheck": true
                 },
                 {
+                    "name": "WalkToggle",
+                    "type": "Button",
+                    "id": "8241ccba-e306-45b8-8df9-7601717329ec",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "Look",
                     "type": "Value",
                     "id": "e9ab30d6-622c-47c6-bcc4-4fc79adcf711",
@@ -71,6 +80,17 @@
                 }
             ],
             "bindings": [
+                {
+                    "name": "",
+                    "id": "0bfe654c-7818-49a7-b4d0-aa5c31ffdb2a",
+                    "path": "<Keyboard>/leftCtrl",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "WalkToggle",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
                 {
                     "name": "2D Vector",
                     "id": "e6a0a7d1-58d4-4f90-8bfe-7a2227edda88",

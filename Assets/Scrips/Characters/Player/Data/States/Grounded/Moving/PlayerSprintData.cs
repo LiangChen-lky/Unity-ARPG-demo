@@ -11,6 +11,8 @@ public class PlayerSprintData
     [field: SerializeField]
     [field: Range(0f, 5f)]
     public float SprintToRunTime { get; private set; } = 1f;
-    
-    
+
+    [field: SerializeField]
+    [field: Range(0f, 5f)]
+    public float RunToWalkTime { get; private set; } = 0.5f;
 }

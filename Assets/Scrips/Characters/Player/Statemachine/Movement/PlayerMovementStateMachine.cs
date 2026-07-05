@@ -8,14 +8,20 @@ public class PlayerMovementStateMachine : StateMachine
     public PlayerIdlingState IdlingState { get; }
     public PlayerDashingState DashingState { get; }
     
+    public PlayerWalkingState WalkingState { get; }
     public PlayerRunningState RunningState { get; }
     public PlayerSprintingState SprintingState { get; }
     
+    public PlayerLightStoppingState LightStoppingState { get; }
     public PlayerMediumStoppingState MediumStoppingState { get; }
     public PlayerHardStoppingState HardStoppingState { get; }
 
     public PlayerJumpingState JumpingState { get; }
     public PlayerFallingState FallingState { get; }
+
+    public PlayerLightLandingState LightLandingState { get; }
+    public PlayerRollingState RollingState { get; }
+    public PlayerHardLandingState HardLandingState { get; }
     
     public PlayerAttackRecoveryState AttackRecoveryState { get; }
     public PlayerAttackState AttackState { get; }
@@ -28,14 +34,20 @@ public class PlayerMovementStateMachine : StateMachine
         IdlingState = new PlayerIdlingState(this);
         DashingState = new PlayerDashingState(this);
         
+        WalkingState = new PlayerWalkingState(this);
         RunningState = new PlayerRunningState(this);
         SprintingState = new PlayerSprintingState(this);
         
+        LightStoppingState = new PlayerLightStoppingState(this);
         MediumStoppingState = new PlayerMediumStoppingState(this);
         HardStoppingState = new PlayerHardStoppingState(this);
 
         JumpingState = new PlayerJumpingState(this);
         FallingState = new PlayerFallingState(this);
+
+        LightLandingState = new PlayerLightLandingState(this);
+        RollingState = new PlayerRollingState(this);
+        HardLandingState = new PlayerHardLandingState(this);
         
         AttackRecoveryState = new PlayerAttackRecoveryState(this);
         AttackState = new PlayerAttackState(this);

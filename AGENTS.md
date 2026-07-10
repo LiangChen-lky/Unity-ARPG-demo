@@ -1,107 +1,111 @@
 # AGENTS.md
 
-This file provides guidance to Codex (Codex.ai/code) when working with code in this repository.
+This file provides guidance to coding agents working in this repository.
 
 ## Project Overview
 
-This is a Unity Action RPG (ARPG) demo project built with Unity 2022.3.62f1c1. The project implements a character controller with hierarchical finite state machine (HFSM) architecture for movement and combat systems.
+This is a Unity Action RPG demo built with Unity 2022.3.62f1c1. The player uses a
+hierarchical finite state machine (HFSM) for movement and combat state
+orchestration.
 
 ## Architecture
 
-### Core Patterns
-- **Singleton Pattern**: `Assets/Scrips/Core/Patterns/Singleton/Singleton.cs` - Generic singleton implementation
-- **MonoSingleton**: `Assets/Scrips/Core/Patterns/Singleton/MonoSingleton.cs` - MonoBehaviour-based singleton base class
-- **State Machine**: `Assets/Scrips/StateMachine/StateMachine.cs` - Base state machine class used for player movement states
-- **Hierarchical FSM**: Player movement uses a hierarchical state machine with parent `PlayerMovementStateMachine` and concrete state implementations
+### State Machine
 
-### Player Character System
-- **Main Player Controller**: `Assets/Scrips/Characters/Player/Player.cs` - Main entry point, initializes state machine
-- **State Machine**: `Assets/Scrips/Characters/Player/Statemachine/Movement/PlayerMovementStateMachine.cs` - Manages player movement states
-- **Input System**: `Assets/Scrips/Characters/Player/Utilities/Input/PlayerInput.cs` - Wrapper for Unity Input System actions
-- **Scriptable Object Data**: Player configuration uses ScriptableObjects (`.asset` files) for data-driven design
+- `Assets/Scrips/StateMachine/StateMachine.cs` contains the shared state
+  machine implementation.
+- `PlayerMovementStateMachine` owns all concrete player movement and combat
+  states.
+- Concrete states follow the `Player[StateName]State` naming convention.
 
-### Attack System
-- **Combat Controller**: `Assets/Scrips/Characters/Player/AttackSystem/PlayerCombatController.cs` - Handles attack combos
-- **Base Class**: `Assets/Scrips/Characters/Player/AttackSystem/CombatControllerBase.cs` - Shared combat functionality
-- **Effect System**: `Assets/Scrips/Characters/Player/AttackSystem/Effect/` - Visual effects and hit FX management
-- **Tool Manager**: `Assets/Scrips/Characters/Player/AttackSystem/Effect/ToolManager.cs` - Global utility for spawning effects (currently direct instantiation, marked for optimization with object pooling)
+### Player Composition
 
-### Data Organization
-- **Animation Data**: `Assets/Scrips/Characters/Player/Data/Animation/` - Animation configuration
-- **State Data**: `Assets/Scrips/Characters/Player/Data/States/` - Per-state configuration (Idle, Run, Sprint, Dash, Jump, Attack, etc.)
-- **ScriptableObjects**: `Assets/ScriptableObjects/Characters/Player/` - Player configuration assets
-- **Layer Data**: `Assets/Scrips/Characters/Player/Data/Layers/PlayerLayerData.cs` - Layer mask utilities
+- `Assets/Scrips/Characters/Player/Player.cs` is the player composition root.
+- The Player GameObject owns the single `PlayerInput` instance.
+- `Player` exposes the configured weapon through `IWeaponController`; weapon
+  implementations do not subscribe to input independently.
+- Player settings are stored in ScriptableObjects under
+  `Assets/ScriptableObjects/Characters/Player/`.
 
-### Key Dependencies (from manifest.json)
-- Unity Input System (`com.unity.inputsystem`) - Modern input handling
-- Cinemachine (`com.unity.cinemachine`) - Camera system
-- Animation Rigging (`com.unity.animation.rigging`) - Animation constraints
-- URP (`com.unity.render-pipelines.universal`) - Render pipeline
-- MagicaCloth - Physics-based cloth simulation (third-party)
+### Combat
 
-## Development Commands
+- `PlayerAttackState` orchestrates combo timing, animation transitions, and
+  state changes only.
+- `CombatExecutor` owns target acquisition, hit-box queries, combat event
+  cursors, and attacker effects.
+- Targets implement `IHitReceiver` and receive an immutable `HitContext`
+  instead of attacker-owned configuration objects.
+- `CombatControllerBase` is the current scene receiver implementation. It
+  handles hit animation, target effects, and configured hit movement.
+- `CombatEffectSpawner` is stateless and injected into `CombatExecutor`.
+  Direct prefab instantiation remains the future object-pooling boundary.
+- Do not add a global singleton, event bus, or second input owner without a
+  concrete cross-system requirement.
+
+### Data
+
+- Animation data: `Assets/Scrips/Characters/Player/Data/Animation/`
+- State data: `Assets/Scrips/Characters/Player/Data/States/`
+- Layer data: `Assets/Scrips/Characters/Player/Data/Layers/`
+- Combo assets: `Assets/ScriptableObjects/Characters/Player/CombatSO/`
+
+## Development
 
 ### Unity Editor
-- Open project in Unity 2022.3.62f1c1
+
+- Use Unity 2022.3.62f1c1.
 - Primary scene: `Assets/Scenes/SampleScene.unity`
+- Default target platform: Windows.
 
-### Building
-- Use Unity Build Settings (File → Build Settings)
-- Target platform: Windows (default)
+### Build Check
 
-### Input System
-- Input actions are defined in `Assets/InputActions/`
-- Regenerate C# code after modifying input actions: Right-click `.inputactions` file → "Generate C# Class"
+```powershell
+dotnet build Assembly-CSharp.csproj --no-restore
+```
 
-### Testing
-- No automated test framework currently configured
-- Manual testing through Unity Editor play mode
+Unity generates the `.csproj` files. Refresh or regenerate them after adding
+or removing scripts.
 
-## Code Conventions
+### Tests
 
-### Naming Patterns
-- State classes follow `Player[StateName]State` convention (e.g., `PlayerIdlingState`, `PlayerRunningState`)
-- Data classes follow `Player[Feature]Data` convention (e.g., `PlayerReusableData`, `PlayerAnimationData`)
-- ScriptableObjects use `[CreateAssetMenu]` attribute with `ScriptableObject/` menu path
+- EditMode architecture tests:
+  `Assets/Tests/Editor/CombatArchitectureTests.cs`
+- Run them from Unity Test Runner in EditMode.
+- The tests guard the combat contract, attack-state boundary, single input
+  owner, scene serialization cleanup, and removal of obsolete infrastructure.
 
-### State Implementation
-- States implement `IState` interface (check `StateMachine.cs` for required methods)
-- Movement states are in `Assets/Scrips/Characters/Player/Statemachine/Movement/State/`
-- Attack states integrate with the movement state machine
+### Input
 
-### Extension Methods
-- `ExpandClass.cs` provides extension methods like `GetMoveOffsetDirection()` for Transform
+- Input actions are under `Assets/InputActions/`.
+- Regenerate the C# class from Unity after changing an `.inputactions` asset.
+- Input actions must be enabled and disabled in matching lifecycle methods.
 
-## Important Notes
+## Conventions
 
-### Recent Changes
-- Attack system was recently combined into HFSM (see commit `cc6bd87`)
-- Singleton pattern was moved to `Assets/Scrips/Core/Patterns/Singleton/` (see git status for moved files)
-
-### Areas Marked for Optimization
-- `ToolManager.PlayOneFX()` currently uses `Object.Instantiate()` - TODO: implement object pooling
-- Effect system uses coroutines for lifetime management
-
-### Scene Setup
-- Player character uses capsule collider with utility class `CapsuleColliderUtility`
-- Camera follows player via Cinemachine
-- Input actions must be enabled/disabled properly (see `PlayerInput.cs`)
+- Data classes follow the `Player[Feature]Data` naming convention.
+- ScriptableObjects use the existing `ScriptableObject/` menu paths.
+- Keep state `Enter`/`Exit` subscriptions paired.
+- Preserve serialized field names and script `.meta` files when moving
+  Unity-owned resources.
+- Prefer existing project patterns and keep changes scoped to the subsystem
+  being modified.
 
 ## File Organization
 
-```
+```text
 Assets/
-├── Scrips/
-│   ├── Characters/Player/           # Player character implementation
-│   │   ├── Player.cs               # Main controller
-│   │   ├── Statemachine/Movement/  # Movement state machine
-│   │   ├── AttackSystem/           # Combat system
-│   │   ├── Data/                   # Configuration data
-│   │   └── Utilities/Input/        # Input handling
-│   ├── StateMachine/               # Base state machine classes
-│   └── Core/Patterns/              # Design patterns (Singleton, etc.)
-├── ScriptableObjects/              # Data assets
-├── Animations/                     # Animation clips
-├── InputActions/                   # Input System definitions
-└── Scenes/                         # Unity scenes
+|-- Animations/
+|-- InputActions/
+|-- Scenes/
+|-- Scrips/
+|   |-- Characters/Player/
+|   |   |-- AttackSystem/
+|   |   |-- Data/
+|   |   |-- Player.cs
+|   |   |-- Statemachine/Movement/
+|   |   `-- Utilities/
+|   |-- StateMachine/
+|   `-- Weapons/
+|-- ScriptableObjects/
+`-- Tests/Editor/
 ```

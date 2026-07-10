@@ -188,11 +188,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 71723d17fd6571546837695ddf0e0afc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <CurrentComboList>k__BackingField: {fileID: 11400000, guid: 494955d4ca4a34b4b8ddde08943153b4,
-    type: 2}
-  <TargetLayer>k__BackingField:
-    serializedVersion: 2
-    m_Bits: 0
   <HitFXList>k__BackingField:
   - {fileID: 11400000, guid: 4338f2e5cc694d04081fe301ec6cb657, type: 2}
   - {fileID: 11400000, guid: 32c25a595591ab049a351e21946cc753, type: 2}

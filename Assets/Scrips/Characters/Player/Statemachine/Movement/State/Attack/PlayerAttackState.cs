@@ -5,18 +5,18 @@ using UnityEngine.InputSystem;
 public class PlayerAttackState : PlayerGroundedState
 {
     private readonly PlayerAttackData attackData;
+    private readonly CombatExecutor combatExecutor;
 
     private bool canExecuteCombo;
-    private Transform currentTarget;
     private int currentComboIndex;
     private int nextComboIndex;
     private Coroutine stopComboCoroutine;
-    private RunningEventIndex runningEventIndex;
     private bool hasHandledAttackExit;
 
     public PlayerAttackState(PlayerMovementStateMachine stateMachine) : base(stateMachine)
     {
         attackData = stateMachine.Player.Data.AttackData;
+        combatExecutor = stateMachine.CombatExecutor;
     }
 
     public override void Enter()
@@ -26,8 +26,8 @@ public class PlayerAttackState : PlayerGroundedState
         stateMachine.ReusableData.MovementSpeedModifier = 0f;
         ResetVelocity();
         stateMachine.Player.WeaponController?.StartAttack();
+        combatExecutor.BeginAttack();
 
-        runningEventIndex = new RunningEventIndex();
         canExecuteCombo = true;
         hasHandledAttackExit = false;
 
@@ -36,6 +36,7 @@ public class PlayerAttackState : PlayerGroundedState
 
     public override void Exit()
     {
+        combatExecutor.EndAttack();
         stateMachine.Player.WeaponController?.CancelAttack();
 
         base.Exit();
@@ -45,94 +46,31 @@ public class PlayerAttackState : PlayerGroundedState
     {
         base.Update();
 
-        RunComboEvents();
+        RunCombatEvents();
         TryHandleAttackAnimationExit();
     }
 
-    private void RunComboEvents()
+    private void RunCombatEvents()
     {
-        if (!HasComboData())
+        if (!combatExecutor.HasComboData)
         {
             return;
         }
 
         AnimatorStateInfo animatorStateInfo = stateMachine.Player.Animator.GetCurrentAnimatorStateInfo(0);
-
-        RunAttackDetectionEvent(animatorStateInfo.normalizedTime);
-        RunFXEvent(animatorStateInfo.normalizedTime);
-    }
-
-    private void RunAttackDetectionEvent(float normalizedTime)
-    {
-        AttackDetectionConfig attackDetectionConfig =
-            attackData.CurrentComboList.TryGetAttackDetectionConfig(currentComboIndex, runningEventIndex.AttackDetectionIndex);
-        if (attackDetectionConfig == null || normalizedTime <= attackDetectionConfig.StartTime)
-        {
-            return;
-        }
-
-        Vector3 boxPosition = stateMachine.Player.transform.forward * attackDetectionConfig.Position.z +
-                              stateMachine.Player.transform.up * attackDetectionConfig.Position.y +
-                              stateMachine.Player.transform.right * attackDetectionConfig.Position.x;
-
-        Collider[] targets = Physics.OverlapBox(
-            stateMachine.Player.transform.position + boxPosition,
-            attackDetectionConfig.Scale,
-            Quaternion.Euler(attackDetectionConfig.Rotation + stateMachine.Player.transform.eulerAngles),
-            attackData.TargetLayer,
-            QueryTriggerInteraction.Ignore);
-
-        foreach (Collider target in targets)
-        {
-            if (!target.TryGetComponent(out CombatControllerBase combatController))
-            {
-                continue;
-            }
-
-            combatController.CharacterBeHit(
-                attackData.CurrentComboList.TryGetComboInteractionConfig(currentComboIndex,
-                    runningEventIndex.AttackDetectionIndex),
-                stateMachine.Player.transform,
-                attackData.CurrentComboList.TryGetTargetMoveOffsetConfig(currentComboIndex,
-                    runningEventIndex.AttackDetectionIndex));
-        }
-
-        runningEventIndex.AttackDetectionIndex++;
-    }
-
-    private void RunFXEvent(float normalizedTime)
-    {
-        FXConfig fxConfig = attackData.CurrentComboList.TryGetFXConfig(currentComboIndex, runningEventIndex.FXIndex);
-        if (fxConfig == null || normalizedTime <= fxConfig.StartTime)
-        {
-            return;
-        }
-
-        if (fxConfig.FXObject != null)
-        {
-            ToolManager.Instance.PlayOneFX(
-                fxConfig.FXObject,
-                fxConfig.Position + stateMachine.Player.transform.position,
-                fxConfig.Rotation + stateMachine.Player.transform.eulerAngles,
-                fxConfig.Scale);
-        }
-
-        runningEventIndex.FXIndex++;
+        combatExecutor.Update(animatorStateInfo.normalizedTime);
     }
 
     private void ExecuteCombo()
     {
-        if (!HasComboData())
+        if (!combatExecutor.HasComboData)
         {
             HandleAttackFinished();
             return;
         }
 
-        FindTarget();
-        LookTarget();
-
-        runningEventIndex.Reset();
         currentComboIndex = nextComboIndex;
+        combatExecutor.BeginCombo(currentComboIndex);
 
         stateMachine.Player.Animator.CrossFadeInFixedTime(
             attackData.CurrentComboList.TryGetComboName(currentComboIndex),
@@ -163,52 +101,6 @@ public class PlayerAttackState : PlayerGroundedState
         {
             nextComboIndex = 0;
         }
-    }
-
-    private void FindTarget()
-    {
-        if (currentTarget != null || attackData == null)
-        {
-            return;
-        }
-
-        Collider[] targetList = Physics.OverlapBox(
-            stateMachine.Player.transform.position,
-            new Vector3(4f, 4f, 4f),
-            Quaternion.identity,
-            attackData.TargetLayer,
-            QueryTriggerInteraction.Ignore);
-
-        float minDistance = float.MaxValue;
-        foreach (Collider target in targetList)
-        {
-            float distance = Vector3.Distance(stateMachine.Player.transform.position, target.transform.position);
-            if (distance < minDistance)
-            {
-                currentTarget = target.transform;
-                minDistance = distance;
-            }
-        }
-    }
-
-    private void LookTarget()
-    {
-        if (currentTarget == null)
-        {
-            return;
-        }
-
-        Vector3 direction = (currentTarget.position - stateMachine.Player.transform.position).normalized;
-        direction.y = 0f;
-        stateMachine.Player.transform.forward = direction;
-    }
-
-    private bool HasComboData()
-    {
-        return attackData != null &&
-               attackData.CurrentComboList != null &&
-               attackData.CurrentComboList.ComboConfigs != null &&
-               attackData.CurrentComboList.ComboConfigs.Length > 0;
     }
 
     private IEnumerator ExecuteComboCold(float coldTime)
@@ -270,19 +162,5 @@ public class PlayerAttackState : PlayerGroundedState
 
         hasHandledAttackExit = true;
         stateMachine.ChangeState(stateMachine.AttackRecoveryState);
-    }
-}
-
-public class RunningEventIndex
-{
-    public int AttackDetectionIndex { get; set; }
-    public int FXIndex { get; set; }
-    public int AttackFeedbackIndex { get; set; }
-
-    public void Reset()
-    {
-        AttackDetectionIndex = 0;
-        FXIndex = 0;
-        AttackFeedbackIndex = 0;
     }
 }

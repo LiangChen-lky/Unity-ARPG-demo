@@ -4,6 +4,7 @@ public class PlayerMovementStateMachine : StateMachine
 {
     public Player Player { get; }
     public PlayerReusableData ReusableData { get; }
+    public CombatExecutor CombatExecutor { get; }
 
     public PlayerIdlingState IdlingState { get; }
     public PlayerDashingState DashingState { get; }
@@ -30,6 +31,7 @@ public class PlayerMovementStateMachine : StateMachine
     {
         Player = player;
         ReusableData = new PlayerReusableData();
+        CombatExecutor = new CombatExecutor(player.transform, player.Data.AttackData);
 
         IdlingState = new PlayerIdlingState(this);
         DashingState = new PlayerDashingState(this);

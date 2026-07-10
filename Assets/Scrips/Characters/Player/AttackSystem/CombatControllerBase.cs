@@ -1,40 +1,53 @@
 using System.Collections;
 using UnityEngine;
 
-public class CombatControllerBase : MonoBehaviour
+public class CombatControllerBase : MonoBehaviour, IHitReceiver
 {
     [field: SerializeField] public HitFXConfig[] HitFXList { get; private set; }
     [field: SerializeField] public Transform[] FXPositionList { get; private set; }
 
     private Animator animator;
+    private ICombatEffectSpawner effectSpawner;
     private Coroutine executeMoveOffsetCoroutine;
 
     protected virtual void Awake()
     {
         animator = GetComponentInChildren<Animator>();
+        effectSpawner = new CombatEffectSpawner();
     }
 
-    public void CharacterBeHit(ComboInteractionConfig interactionConfig, Transform attacker, MoveOffsetConfig moveOffsetConfig)
+    protected virtual void OnDisable()
     {
-        if (interactionConfig == null || attacker == null)
+        if (executeMoveOffsetCoroutine == null)
         {
             return;
         }
 
-        transform.forward = -attacker.forward;
-
-        if (animator != null && !string.IsNullOrEmpty(interactionConfig.HitName))
-        {
-            animator.Play(interactionConfig.HitName);
-        }
-
-        PlayHitFX(interactionConfig);
-        ExecuteMoveOffset(moveOffsetConfig, attacker);
+        StopCoroutine(executeMoveOffsetCoroutine);
+        executeMoveOffsetCoroutine = null;
     }
 
-    private void PlayHitFX(ComboInteractionConfig interactionConfig)
+    public virtual void ReceiveHit(HitContext context)
     {
-        int hitFXIndex = (int)interactionConfig.AttackForce;
+        Vector3 targetForward = -context.SourceForward;
+        targetForward.y = 0f;
+        if (targetForward.sqrMagnitude > Mathf.Epsilon)
+        {
+            transform.forward = targetForward.normalized;
+        }
+
+        if (animator != null && !string.IsNullOrEmpty(context.HitAnimationName))
+        {
+            animator.Play(context.HitAnimationName);
+        }
+
+        PlayHitFX(context.Force);
+        ExecuteMoveOffset(context.Movement);
+    }
+
+    private void PlayHitFX(AttackForce force)
+    {
+        int hitFXIndex = (int)force;
         if (HitFXList == null || hitFXIndex < 0 || hitFXIndex >= HitFXList.Length)
         {
             return;
@@ -57,12 +70,12 @@ public class CombatControllerBase : MonoBehaviour
             return;
         }
 
-        ToolManager.Instance.PlayOneFX(fxObject, FXPositionList[0].position, Vector3.zero, Vector3.one);
+        effectSpawner.SpawnOneShot(fxObject, FXPositionList[0].position, Vector3.zero, Vector3.one);
     }
 
-    private void ExecuteMoveOffset(MoveOffsetConfig moveOffsetConfig, Transform user)
+    private void ExecuteMoveOffset(HitMovement movement)
     {
-        if (moveOffsetConfig == null || moveOffsetConfig.MoveCurve == null || user == null)
+        if (!movement.IsValid || animator == null)
         {
             return;
         }
@@ -72,22 +85,35 @@ public class CombatControllerBase : MonoBehaviour
             StopCoroutine(executeMoveOffsetCoroutine);
         }
 
-        Vector3 direction = user.GetMoveOffsetDirection(moveOffsetConfig.MoveOffsetDirection);
-        executeMoveOffsetCoroutine = StartCoroutine(ExecuteMoveOffsetIEnumerator(moveOffsetConfig, direction));
+        executeMoveOffsetCoroutine = StartCoroutine(ExecuteMoveOffsetCoroutine(movement));
     }
 
-    private IEnumerator ExecuteMoveOffsetIEnumerator(MoveOffsetConfig moveOffsetConfig, Vector3 direction)
+    private IEnumerator ExecuteMoveOffsetCoroutine(HitMovement movement)
     {
-        if (animator == null)
-        {
-            executeMoveOffsetCoroutine = null;
-            yield break;
-        }
+        yield return null;
 
-        while (animator.GetCurrentAnimatorStateInfo(0).normalizedTime < moveOffsetConfig.Duration)
+        float previousValue = movement.Evaluate(movement.StartTime);
+
+        while (true)
         {
+            float normalizedTime = animator.GetCurrentAnimatorStateInfo(0).normalizedTime;
+            if (normalizedTime < movement.StartTime)
+            {
+                yield return null;
+                continue;
+            }
+
+            float sampleTime = Mathf.Min(normalizedTime, movement.Duration);
+            float currentValue = movement.Evaluate(sampleTime);
+            transform.position += movement.Direction * (currentValue - previousValue);
+            previousValue = currentValue;
+
+            if (normalizedTime >= movement.Duration)
+            {
+                break;
+            }
+
             yield return null;
-            float value = moveOffsetConfig.MoveCurve.Evaluate(animator.GetCurrentAnimatorStateInfo(0).normalizedTime);
         }
 
         executeMoveOffsetCoroutine = null;

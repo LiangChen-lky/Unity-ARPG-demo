@@ -9568,6 +9568,7 @@ MonoBehaviour:
     <GroundLayer>k__BackingField:
       serializedVersion: 2
       m_Bits: 64
+  weaponControllerSource: {fileID: 975131839}
 --- !u!114 &727762873
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10472,7 +10473,6 @@ GameObject:
   m_Component:
   - component: {fileID: 975131838}
   - component: {fileID: 975131839}
-  - component: {fileID: 975131840}
   m_Layer: 0
   m_Name: Weapon
   m_TagString: Untagged
@@ -10512,19 +10512,6 @@ MonoBehaviour:
   <WeaponAttackingPosition>k__BackingField: {fileID: 1450742420}
   <Data>k__BackingField: {fileID: 11400000, guid: 87d589e3bfc76734cad638ec4a0dedfe,
     type: 2}
-  inputSource: {fileID: 0}
---- !u!114 &975131840
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 975131837}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cacbcf317e48128418baab9d35ecbcee, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!4 &976002665 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8330535178661519905, guid: f8a70080ed072c5488e9336df5319d2b,

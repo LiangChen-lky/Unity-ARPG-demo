@@ -12,9 +12,13 @@ public class Player : MonoBehaviour
 
     [field: Header("Cameras")]
     [field: SerializeField] public PlayerCameraUtility CameraUtility { get; private set; }
+
+    [Header("Combat")]
+    [SerializeField] private MonoBehaviour weaponControllerSource;
     
     public Animator Animator { get; private set; }
     public PlayerInput Input { get; private set; }
+    public IWeaponController WeaponController => weaponControllerSource as IWeaponController;
     public Rigidbody Rigidbody { get; private set; }
     public Transform MainCameraTransform { get; private set; }
     
@@ -40,6 +44,11 @@ public class Player : MonoBehaviour
     {
         ColliderUtility.Initialize(gameObject);
         ColliderUtility.CalculateCapsuleColliderDimensions();
+
+        if (weaponControllerSource != null && !(weaponControllerSource is IWeaponController))
+        {
+            Debug.LogError($"{weaponControllerSource.name} must implement {nameof(IWeaponController)}.", this);
+        }
     }
 
     private void Start()

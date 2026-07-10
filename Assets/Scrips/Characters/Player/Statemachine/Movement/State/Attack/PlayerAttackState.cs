@@ -25,12 +25,20 @@ public class PlayerAttackState : PlayerGroundedState
 
         stateMachine.ReusableData.MovementSpeedModifier = 0f;
         ResetVelocity();
+        stateMachine.Player.WeaponController?.StartAttack();
 
         runningEventIndex = new RunningEventIndex();
         canExecuteCombo = true;
         hasHandledAttackExit = false;
 
         ExecuteCombo();
+    }
+
+    public override void Exit()
+    {
+        stateMachine.Player.WeaponController?.CancelAttack();
+
+        base.Exit();
     }
 
     public override void Update()

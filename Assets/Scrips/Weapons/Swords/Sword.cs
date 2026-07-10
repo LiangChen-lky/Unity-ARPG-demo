@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class Sword : MonoBehaviour, IWeaponController
 {
@@ -7,32 +6,14 @@ public class Sword : MonoBehaviour, IWeaponController
     [field: SerializeField] public Transform WeaponAttackingPosition { get; private set; }
     [field: SerializeField] public WeaponSO Data { get; private set; }
 
-    [SerializeField] private PlayerInput inputSource;
-    private PlayerInput playerInput;
-
     private WeaponState currentState = WeaponState.Idle;
     private Vector3 facingDirection = Vector3.forward;
     private Vector3 idleSmoothVelocity;
-    private bool inputCallbacksRegistered;
 
 
     public bool IsAttacking => currentState == WeaponState.Attacking;
 
     #region Mono Methods
-    private void Awake()
-    {
-        playerInput = inputSource != null ? inputSource : GetComponentInParent<PlayerInput>();
-        if (playerInput != null)
-        {
-            playerInput.EnsureInitialized();
-        }
-    }
-
-    private void OnEnable()
-    {
-        RegisterInputCallbacks();
-    }
-
     private void Start()
     {
         EnterIdle();
@@ -50,18 +31,7 @@ public class Sword : MonoBehaviour, IWeaponController
 
     private void OnDisable()
     {
-        UnregisterInputCallbacks();
-        // 编辑器模式下不执行取消攻击
-        if (!Application.isPlaying)
-        {
-            CancelAttack();
-        }
-        
-    }
-
-    private void OnDestroy()
-    {
-        UnregisterInputCallbacks();
+        CancelAttack();
     }
 
     #endregion
@@ -120,47 +90,6 @@ public class Sword : MonoBehaviour, IWeaponController
 
     #endregion
 
-    #region Input Methods
-
-    private void RegisterInputCallbacks()
-    {
-        if (inputCallbacksRegistered || playerInput == null)
-        {
-            return;
-        }
-
-        playerInput.PlayerActions.Attack.started += OnAttackStarted;
-        playerInput.PlayerActions.Dash.started += OnCancelRequested;
-        playerInput.PlayerActions.Jump.started += OnCancelRequested;
-        inputCallbacksRegistered = true;
-    }
-
-    private void UnregisterInputCallbacks()
-    {
-        if (!inputCallbacksRegistered || playerInput == null)
-        {
-            return;
-        }
-
-        playerInput.PlayerActions.Attack.started -= OnAttackStarted;
-        playerInput.PlayerActions.Dash.started -= OnCancelRequested;
-        playerInput.PlayerActions.Jump.started -= OnCancelRequested;
-        inputCallbacksRegistered = false;
-    }
-
-    private void OnAttackStarted(InputAction.CallbackContext context)
-    {
-        StartAttack();
-    }
-
-    private void OnCancelRequested(InputAction.CallbackContext context)
-    {
-        CancelAttack();
-    }
-
-
-    #endregion
-    
     private void EnterIdle()
     {
         currentState = WeaponState.Idle;

@@ -9,16 +9,16 @@ public class PlayerAnimationData
 
     [field: Header("Player State Names")]
     [field: SerializeField] private string idlingAnimationName = "Idle";
-    [field: SerializeField] private string walkingAnimationName = "Walk";
+    [field: SerializeField] private string walkingAnimationName = "Run";
     [field: SerializeField] private string runningAnimationName = "Run";
     [field: SerializeField] private string dashingAnimationName = "Dash";
     [field: SerializeField] private string sprintingAnimationName = "Sprint";
-    [field: SerializeField] private string lightStoppingAnimationName = "LightStop";
+    [field: SerializeField] private string lightStoppingAnimationName = "MediumStop";
     [field: SerializeField] private string mediumStoppingAnimationName = "MediumStop";
     [field: SerializeField] private string hardStoppingAnimationName = "HardStop";
-    [field: SerializeField] private string lightLandingAnimationName = "LightLand";
-    [field: SerializeField] private string hardLandingAnimationName = "HardLand";
-    [field: SerializeField] private string rollingAnimationName = "Roll";
+    [field: SerializeField] private string lightLandingAnimationName = "Idle";
+    [field: SerializeField] private string hardLandingAnimationName = "HardStop";
+    [field: SerializeField] private string rollingAnimationName = "Dash";
     [field: SerializeField] private string jumpingAnimationName = "Jump";
     [field: SerializeField] private string fallingAnimationName = "Fall";
 

@@ -177,6 +177,11 @@ public class PlayerMovementState : IState, ITriggerHandler
         stateMachine.Player.Rigidbody.linearVelocity = Vector3.zero;
     }
 
+    protected void ResetHorizontalVelocity()
+    {
+        stateMachine.Player.Rigidbody.linearVelocity = GetPlayerVerticalVelocity();
+    }
+
     protected void ResetVerticalVelocity()
     {
         Vector3 playerHorizontalVelocity = GetPlayerHorizontalVelocity();

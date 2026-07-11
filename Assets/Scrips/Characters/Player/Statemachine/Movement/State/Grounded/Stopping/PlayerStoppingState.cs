@@ -36,6 +36,13 @@ public class PlayerStoppingState : PlayerGroundedState
         stateMachine.ChangeState(stateMachine.IdlingState);
     }
 
+    public override void OnAnimationExitEnvent()
+    {
+        base.OnAnimationExitEnvent();
+
+        ResetHorizontalVelocity();
+    }
+
     #endregion
     
     #region Reusable Methods

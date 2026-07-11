@@ -146,6 +146,7 @@ struct ToonLightingData
     float3  positionWS;
     half3   viewDirectionWS;
     float4  shadowCoord;
+    float2  normalizedScreenSpaceUV;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -301,6 +302,7 @@ ToonLightingData InitializeLightingData(Varyings input)
     lightingData.positionWS = input.positionWSAndFogFactor.xyz;
     lightingData.viewDirectionWS = SafeNormalize(GetCameraPositionWS() - lightingData.positionWS);  
     lightingData.normalWS = normalize(input.normalWS); //interpolated normal is NOT unit vector, we need to normalize it
+    lightingData.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(input.positionCS);
 
     return lightingData;
 }
@@ -312,6 +314,19 @@ ToonLightingData InitializeLightingData(Varyings input)
 // all lighting equation written inside this .hlsl,
 // just by editing this .hlsl can control most of the visual result.
 #include "SimpleURPToonLitOutlineExample_LightingEquation.hlsl"
+
+Light GetToonAdditionalLight(uint lightIndex, float3 positionWS, float3 shadowTestPosWS)
+{
+#if USE_CLUSTER_LIGHT_LOOP
+    int lightBufferIndex = lightIndex;
+#else
+    int lightBufferIndex = GetPerObjectLightIndex(lightIndex);
+#endif
+
+    Light light = GetAdditionalPerObjectLight(lightBufferIndex, positionWS);
+    light.shadowAttenuation = AdditionalLightRealtimeShadow(lightBufferIndex, shadowTestPosWS);
+    return light;
+}
 
 // this function contains no lighting logic, it just pass lighting results data around
 // the job done in this function is "do shadow mapping depth test positionWS offset"
@@ -362,21 +377,29 @@ half3 ShadeAllLights(ToonSurfaceData surfaceData, ToonLightingData lightingData)
     half3 additionalLightSumResult = 0;
 
 #ifdef _ADDITIONAL_LIGHTS
-    // Returns the amount of lights affecting the object being renderer.
-    // These lights are culled per-object in the forward renderer of URP.
-    int additionalLightsCount = GetAdditionalLightsCount();
-    for (int i = 0; i < additionalLightsCount; ++i)
-    {
-        // Similar to GetMainLight(), but it takes a for-loop index. This figures out the
-        // per-object light index and samples the light buffer accordingly to initialized the
-        // Light struct. If ADDITIONAL_LIGHT_CALCULATE_SHADOWS is defined it will also compute shadows.
-        int perObjectLightIndex = GetPerObjectLightIndex(i);
-        Light light = GetAdditionalPerObjectLight(perObjectLightIndex, lightingData.positionWS); // use original positionWS for lighting
-        light.shadowAttenuation = AdditionalLightRealtimeShadow(perObjectLightIndex, shadowTestPosWS); // use offseted positionWS for shadow test
+    uint pixelLightCount = GetAdditionalLightsCount();
 
-        // Different function used to shade additional lights.
+#if USE_CLUSTER_LIGHT_LOOP
+    // Cluster directional lights are stored before punctual lights and are not part of ClusterIterator.
+    [loop]
+    for (uint lightIndex = 0; lightIndex < min(URP_FP_DIRECTIONAL_LIGHTS_COUNT, MAX_VISIBLE_LIGHTS); ++lightIndex)
+    {
+        CLUSTER_LIGHT_LOOP_SUBTRACTIVE_LIGHT_CHECK
+
+        Light light = GetToonAdditionalLight(lightIndex, lightingData.positionWS, shadowTestPosWS);
         additionalLightSumResult += ShadeSingleLight(surfaceData, lightingData, light, true);
     }
+#endif
+
+    // LIGHT_LOOP_BEGIN uses a per-object loop in Forward and ClusterIterator in Forward+.
+    InputData inputData = (InputData)0;
+    inputData.normalizedScreenSpaceUV = lightingData.normalizedScreenSpaceUV;
+    inputData.positionWS = lightingData.positionWS;
+
+    LIGHT_LOOP_BEGIN(pixelLightCount)
+        Light light = GetToonAdditionalLight(lightIndex, lightingData.positionWS, shadowTestPosWS);
+        additionalLightSumResult += ShadeSingleLight(surfaceData, lightingData, light, true);
+    LIGHT_LOOP_END
 #endif
     //==============================================================================================
 

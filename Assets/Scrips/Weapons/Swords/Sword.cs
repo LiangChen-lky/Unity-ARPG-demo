@@ -31,7 +31,8 @@ public class Sword : MonoBehaviour, IWeaponController
 
     private void OnDisable()
     {
-        CancelAttack();
+        currentState = WeaponState.Idle;
+        idleSmoothVelocity = Vector3.zero;
     }
 
     #endregion

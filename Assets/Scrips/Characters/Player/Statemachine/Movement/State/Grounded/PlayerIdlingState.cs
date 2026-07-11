@@ -18,7 +18,9 @@ public class PlayerIdlingState : PlayerGroundedState
         stateMachine.ReusableData.MovementSpeedModifier = 0f;
         stateMachine.ReusableData.CurrentJumpForce = AirborneData.JumpData.StationaryForce;
 
-        stateMachine.Player.Animator.CrossFade(AnimationData.IdlingAnimationHash, AnimationData.TransitionDuration);
+        stateMachine.Player.Animator.CrossFadeInFixedTime(
+            AnimationData.IdlingAnimationHash,
+            AnimationData.TransitionDuration);
     }
 
     public override void Update()

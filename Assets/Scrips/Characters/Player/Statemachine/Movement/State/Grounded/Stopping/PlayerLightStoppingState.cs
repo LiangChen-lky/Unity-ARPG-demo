@@ -8,7 +8,9 @@ public class PlayerLightStoppingState : PlayerStoppingState
     {
         base.Enter();
 
-        stateMachine.Player.Animator.Play(AnimationData.LightStoppingAnimationHash);
+        stateMachine.Player.Animator.CrossFadeInFixedTime(
+            AnimationData.LightStoppingAnimationHash,
+            AnimationData.TransitionDuration);
         stateMachine.ReusableData.MovementDecelerationForce = GroundedData.StopData.LightDecelerationForce;
         stateMachine.ReusableData.CurrentJumpForce = AirborneData.JumpData.WeakForce;
     }

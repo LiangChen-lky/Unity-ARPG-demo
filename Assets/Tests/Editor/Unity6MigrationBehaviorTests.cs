@@ -143,34 +143,45 @@ public class Unity6MigrationBehaviorTests
 
         VerifyDistinctEntityIdsRemainDistinct(manager);
 
-        Keyboard keyboard = InputSystem.AddDevice<Keyboard>("Unity6MigrationTestKeyboard");
-        Vector3 movementStart = player.Rigidbody.position;
+        Keyboard keyboard = null;
+        float movedDistance = 0f;
+        float dashSpeed = 0f;
+        float jumpSpeed = 0f;
 
-        InputSystem.QueueStateEvent(keyboard, new KeyboardState(Key.W));
-        InputSystem.Update();
-        yield return null;
-        for (int i = 0; i < 5; i++)
+        try
         {
+            keyboard = InputSystem.AddDevice<Keyboard>("Unity6MigrationTestKeyboard");
+            Vector3 movementStart = player.Rigidbody.position;
+
+            InputSystem.QueueStateEvent(keyboard, new KeyboardState(Key.W));
+            InputSystem.Update();
+            yield return null;
+            for (int i = 0; i < 5; i++)
+            {
+                yield return new WaitForFixedUpdate();
+            }
+
+            movedDistance = Vector3.ProjectOnPlane(
+                player.Rigidbody.position - movementStart,
+                Vector3.up).magnitude;
+
+            InputSystem.QueueStateEvent(keyboard, new KeyboardState(Key.W, Key.LeftShift));
+            InputSystem.Update();
             yield return new WaitForFixedUpdate();
+            dashSpeed = Vector3.ProjectOnPlane(player.Rigidbody.linearVelocity, Vector3.up).magnitude;
+
+            InputSystem.QueueStateEvent(keyboard, new KeyboardState(Key.W, Key.Space));
+            InputSystem.Update();
+            yield return new WaitForFixedUpdate();
+            jumpSpeed = player.Rigidbody.linearVelocity.y;
         }
-
-        float movedDistance = Vector3.ProjectOnPlane(
-            player.Rigidbody.position - movementStart,
-            Vector3.up).magnitude;
-
-        InputSystem.QueueStateEvent(keyboard, new KeyboardState(Key.W, Key.LeftShift));
-        InputSystem.Update();
-        yield return new WaitForFixedUpdate();
-        float dashSpeed = Vector3.ProjectOnPlane(player.Rigidbody.linearVelocity, Vector3.up).magnitude;
-
-        InputSystem.QueueStateEvent(keyboard, new KeyboardState(Key.W, Key.Space));
-        InputSystem.Update();
-        yield return new WaitForFixedUpdate();
-        float jumpSpeed = player.Rigidbody.linearVelocity.y;
-
-        InputSystem.QueueStateEvent(keyboard, new KeyboardState());
-        InputSystem.Update();
-        InputSystem.RemoveDevice(keyboard);
+        finally
+        {
+            if (keyboard != null && keyboard.added)
+            {
+                InputSystem.RemoveDevice(keyboard);
+            }
+        }
 
         Assert.That(movedDistance, Is.GreaterThan(0.01f), "W did not move the player.");
         Assert.That(dashSpeed, Is.GreaterThan(1f), "Shift did not produce dash velocity.");

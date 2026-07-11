@@ -49,7 +49,7 @@ namespace MagicaCloth
             /// 現在のパーツハンドル
             /// </summary>
             [System.NonSerialized]
-            public int handle;
+            public EntityId handle;
 
             /// <summary>
             /// 現在のリストインデックス
@@ -110,10 +110,10 @@ namespace MagicaCloth
 
             var group = avatarPartsGroupList[id];
 
-            if (group.handle != 0)
+            if (!group.handle.Equals(default(EntityId)))
             {
                 avatar.DetachAvatarParts(group.handle);
-                group.handle = 0;
+                group.handle = default;
             }
 
             var index = group.index + dir;
@@ -134,10 +134,10 @@ namespace MagicaCloth
         {
             foreach (var group in avatarPartsGroupList)
             {
-                if (group.handle != 0)
+                if (!group.handle.Equals(default(EntityId)))
                 {
                     avatar.DetachAvatarParts(group.handle);
-                    group.handle = 0;
+                    group.handle = default;
                 }
             }
         }

@@ -23,7 +23,7 @@ namespace MagicaCloth
         /// <param name="avatarPartsPrefab"></param>
         /// <param name="instanceAction">Action called after instantiation.</param>
         /// <returns></returns>
-        public int AttachAvatarParts(GameObject avatarPartsPrefab, System.Action<GameObject> instanceAction = null)
+        public EntityId AttachAvatarParts(GameObject avatarPartsPrefab, System.Action<GameObject> instanceAction = null)
         {
             var avatarPartsObject = Instantiate(avatarPartsPrefab);
 
@@ -40,7 +40,7 @@ namespace MagicaCloth
         /// Removed avatar parts will be deleted.
         /// </summary>
         /// <param name="partsId"></param>
-        public void DetachAvatarParts(int partsId)
+        public void DetachAvatarParts(EntityId partsId)
         {
             Runtime.RemoveAvatarParts(partsId);
         }

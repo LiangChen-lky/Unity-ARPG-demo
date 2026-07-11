@@ -56,13 +56,7 @@ namespace MagicaCloth
             }
         }
 
-        public int PartsId
-        {
-            get
-            {
-                return GetEntityId().GetHashCode();
-            }
-        }
+        public EntityId PartsId => GetEntityId();
 
         //=============================================================================================
         private void OnDestroy()

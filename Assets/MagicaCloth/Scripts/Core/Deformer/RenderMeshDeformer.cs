@@ -201,13 +201,13 @@ namespace MagicaCloth
                     cloneMesh.bounds = bounds;
             }
 
-            // 共有メッシュのuid
-            int uid = sharedMesh.GetEntityId().GetHashCode(); // 共有メッシュのIDを使う
-            bool first = MagicaPhysicsManager.Instance.Mesh.IsEmptySharedRenderMesh(uid);
+            // 共有メッシュのID
+            EntityId meshEntityId = sharedMesh.GetEntityId();
+            bool first = MagicaPhysicsManager.Instance.Mesh.IsEmptySharedRenderMesh(meshEntityId);
 
             // メッシュ登録
             MeshIndex = MagicaPhysicsManager.Instance.Mesh.AddRenderMesh(
-                uid,
+                meshEntityId,
                 MeshData.isSkinning,
                 MeshData.baseScale,
                 MeshData.VertexCount,

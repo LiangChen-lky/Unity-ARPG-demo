@@ -165,10 +165,10 @@ namespace MagicaCloth
         /// アバターパーツの追加
         /// </summary>
         /// <param name="parts"></param>
-        public int AddAvatarParts(MagicaAvatarParts parts)
+        public EntityId AddAvatarParts(MagicaAvatarParts parts)
         {
             if (parts == null)
-                return 0;
+                return default;
 
             //Debug.Log("AddAvatarParts:" + parts.name);
 
@@ -453,7 +453,7 @@ namespace MagicaCloth
         /// アバターパーツの削除(パーツID)
         /// </summary>
         /// <param name="partsId"></param>
-        public void RemoveAvatarParts(int partsId)
+        public void RemoveAvatarParts(EntityId partsId)
         {
             var parts = avatarPartsList.Find((p) => p.PartsId == partsId);
             RemoveAvatarParts(parts);

@@ -313,6 +313,9 @@ namespace MagicaCloth
         }
         public FixedNativeList<SharedRenderMeshInfo> sharedRenderMeshInfoList;
         public Dictionary<int, int> sharedRenderMeshIdToIndexDict = new Dictionary<int, int>(); // 登録管理
+        private readonly Dictionary<EntityId, int> renderMeshEntityIdToUid = new Dictionary<EntityId, int>();
+        private readonly Dictionary<int, EntityId> renderMeshUidToEntityId = new Dictionary<int, EntityId>();
+        private int nextRenderMeshUid = 1;
 
         public FixedChunkNativeArray<float3> sharedRenderVertices;
 
@@ -684,6 +687,9 @@ namespace MagicaCloth
             renderNormalList.Dispose();
             renderTangentList.Dispose();
             renderBoneWeightList.Dispose();
+
+            renderMeshEntityIdToUid.Clear();
+            renderMeshUidToEntityId.Clear();
         }
 
         //=========================================================================================
@@ -1414,14 +1420,15 @@ namespace MagicaCloth
         /// <param name="vertexCount"></param>
         /// <returns></returns>
         public int AddRenderMesh(
-            int uid,
+            EntityId entityId,
             bool isSkinning,
             Vector3 baseScale,
             int vertexCount,
             int rendererBoneIndex,
             int boneWeightCount
-            )
+        )
         {
+            int uid = GetOrCreateRenderMeshUid(entityId);
             //Develop.Log($"★AddRenderMesh uid:{uid} vcnt:{vertexCount} rboneindex:{rendererBoneIndex} bonewcnt:{boneWeightCount}, isSkinning:{isSkinning}");
             // レンダーメッシュ共有情報登録
             int sharedMeshIndex = -1;
@@ -1533,9 +1540,21 @@ namespace MagicaCloth
             renderMeshInfoList[renderMeshIndex] = minfo;
         }
 
-        public bool IsEmptySharedRenderMesh(int uid)
+        public bool IsEmptySharedRenderMesh(EntityId entityId)
         {
-            return sharedRenderMeshIdToIndexDict.ContainsKey(uid) == false;
+            return !renderMeshEntityIdToUid.TryGetValue(entityId, out int uid)
+                || !sharedRenderMeshIdToIndexDict.ContainsKey(uid);
+        }
+
+        private int GetOrCreateRenderMeshUid(EntityId entityId)
+        {
+            if (renderMeshEntityIdToUid.TryGetValue(entityId, out int uid))
+                return uid;
+
+            uid = nextRenderMeshUid++;
+            renderMeshEntityIdToUid.Add(entityId, uid);
+            renderMeshUidToEntityId.Add(uid, entityId);
+            return uid;
         }
 
         /// <summary>
@@ -1641,6 +1660,11 @@ namespace MagicaCloth
 
                         sharedRenderMeshInfoList.Remove(sharedMeshIndex);
                         sharedRenderMeshIdToIndexDict.Remove(sminfo.uid);
+                        if (renderMeshUidToEntityId.TryGetValue(sminfo.uid, out EntityId entityId))
+                        {
+                            renderMeshUidToEntityId.Remove(sminfo.uid);
+                            renderMeshEntityIdToUid.Remove(entityId);
+                        }
                     }
                     else
                     {

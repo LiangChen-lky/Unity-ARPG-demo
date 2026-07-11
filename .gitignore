@@ -26,3 +26,7 @@
 # Local crash and diagnostic output
 /hs_err_pid*.log
 /sysinfo.txt
+
+# Local MCP client configuration (may contain machine-specific paths or secrets)
+/.claude/mcp.json
+/.mcp.json

@@ -2,8 +2,27 @@
 /[Tt]emp/
 /[Oo]bj/
 /[Bb]uild/
+/[Bb]uilds/
 /[Ll]ogs/
 /[Uu]ser[Ss]ettings/
+/[Mm]emoryCaptures/
+/[Rr]ecordings/
+
+# IDE-generated project and user state
+/.idea/
+/.vs/
 /*.csproj
 /*.sln
+/*.sln.DotSettings.user
 *.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# Local crash and diagnostic output
+/hs_err_pid*.log
+/sysinfo.txt

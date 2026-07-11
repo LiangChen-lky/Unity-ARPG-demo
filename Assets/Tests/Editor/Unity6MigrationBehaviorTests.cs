@@ -207,16 +207,20 @@ public class Unity6MigrationBehaviorTests
     {
         string outputDirectory = Path.GetFullPath(Path.Combine("Temp", "Unity6MigrationBuild"));
         string executablePath = Path.Combine(outputDirectory, "ARPGDemo.exe");
+        string[] enabledScenes = EditorBuildSettings.scenes
+            .Where(scene => scene.enabled)
+            .Select(scene => scene.path)
+            .ToArray();
+
+        Assert.That(enabledScenes, Does.Contain(SampleScenePath),
+            $"{SampleScenePath} must be enabled in Build Settings before migration validation.");
 
         try
         {
             Directory.CreateDirectory(outputDirectory);
             BuildPlayerOptions options = new BuildPlayerOptions
             {
-                scenes = EditorBuildSettings.scenes
-                    .Where(scene => scene.enabled)
-                    .Select(scene => scene.path)
-                    .ToArray(),
+                scenes = enabledScenes,
                 locationPathName = executablePath,
                 target = BuildTarget.StandaloneWindows64,
                 options = UnityEditor.BuildOptions.Development

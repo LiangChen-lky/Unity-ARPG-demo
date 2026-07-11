@@ -16,13 +16,13 @@ namespace MagicaCloth
 
         static DrawClothIconInHierarchy()
         {
-            EditorApplication.hierarchyWindowItemOnGUI += DrawIcon;
+            EditorApplication.hierarchyWindowItemByEntityIdOnGUI += DrawIcon;
         }
 
-        static void DrawIcon(int instanceId, Rect rect)
+        static void DrawIcon(EntityId entityId, Rect rect)
         {
             rect.width = iconSize;
-            GameObject obj = UnityEditor.EditorUtility.InstanceIDToObject(instanceId) as GameObject;
+            GameObject obj = EditorUtility.EntityIdToObject(entityId) as GameObject;
             if (obj == null)
                 return;
             rect.x += EditorStyles.label.CalcSize(obj.name).x;

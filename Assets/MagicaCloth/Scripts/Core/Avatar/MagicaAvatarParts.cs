@@ -60,7 +60,7 @@ namespace MagicaCloth
         {
             get
             {
-                return GetInstanceID();
+                return GetEntityId().GetHashCode();
             }
         }
 

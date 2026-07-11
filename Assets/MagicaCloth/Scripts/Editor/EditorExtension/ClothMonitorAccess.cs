@@ -3,6 +3,7 @@
 // https://magicasoft.jp
 namespace MagicaCloth
 {
+    [System.Serializable]
     public abstract class ClothMonitorAccess
     {
         protected ClothMonitorMenu menu;

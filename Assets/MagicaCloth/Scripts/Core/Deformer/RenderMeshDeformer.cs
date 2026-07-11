@@ -202,7 +202,7 @@ namespace MagicaCloth
             }
 
             // 共有メッシュのuid
-            int uid = sharedMesh.GetInstanceID(); // 共有メッシュのIDを使う
+            int uid = sharedMesh.GetEntityId().GetHashCode(); // 共有メッシュのIDを使う
             bool first = MagicaPhysicsManager.Instance.Mesh.IsEmptySharedRenderMesh(uid);
 
             // メッシュ登録

@@ -35,17 +35,17 @@ namespace MagicaCloth
         /// <summary>
         /// 使用インデックス辞書
         /// </summary>
-        Dictionary<int, int> useIndexDict = new Dictionary<int, int>();
+        Dictionary<int, EntityId> useIndexDict = new Dictionary<int, EntityId>();
 
         /// <summary>
         /// トランスフォームインデックス辞書
         /// </summary>
-        Dictionary<int, int> indexDict = new Dictionary<int, int>();
+        Dictionary<EntityId, int> indexDict = new Dictionary<EntityId, int>();
 
         /// <summary>
         /// トランスフォーム参照カウンタ辞書
         /// </summary>
-        Dictionary<int, int> referenceDict = new Dictionary<int, int>();
+        Dictionary<EntityId, int> referenceDict = new Dictionary<EntityId, int>();
 
         //=========================================================================================
         public FixedTransformAccessArray(int desiredJobCount = -1)
@@ -69,7 +69,7 @@ namespace MagicaCloth
         {
             int index = 0;
 
-            int id = element.GetInstanceID();
+            EntityId id = element.GetEntityId();
 
             if (referenceDict.ContainsKey(id))
             {
@@ -107,7 +107,7 @@ namespace MagicaCloth
         {
             if (useIndexDict.ContainsKey(index))
             {
-                int id = useIndexDict[index];
+                EntityId id = useIndexDict[index];
                 int cnt = referenceDict[id] - 1;
                 if (cnt > 0)
                 {
@@ -136,7 +136,7 @@ namespace MagicaCloth
         {
             if (element == null)
                 return false;
-            return indexDict.ContainsKey(element.GetInstanceID());
+            return indexDict.ContainsKey(element.GetEntityId());
         }
 
         /// <summary>
@@ -173,7 +173,7 @@ namespace MagicaCloth
         {
             if (element == null)
                 return -1;
-            int id = element.GetInstanceID();
+            EntityId id = element.GetEntityId();
             if (indexDict.ContainsKey(id))
                 return indexDict[id];
             else

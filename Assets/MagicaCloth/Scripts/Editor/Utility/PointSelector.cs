@@ -19,7 +19,7 @@ namespace MagicaCloth
         /// 編集状態
         /// </summary>
         public static bool EditEnable { get; private set; }
-        private static int EditInstanceId = 0;
+        private static EntityId EditEntityId;
         private static UnityEngine.Object EditObject = null;
 
         //=========================================================================================
@@ -30,7 +30,7 @@ namespace MagicaCloth
         static void Init()
         {
             EditEnable = false;
-            EditInstanceId = 0;
+            EditEntityId = default;
             EditObject = null;
         }
 
@@ -145,7 +145,7 @@ namespace MagicaCloth
                 return;
             Clear();
             EditEnable = true;
-            EditInstanceId = obj.GetInstanceID();
+            EditEntityId = obj.GetEntityId();
             EditObject = obj;
 
             pointSize = EditorPrefs.GetFloat("PointSelector_PointSize", 0.01f);
@@ -165,7 +165,7 @@ namespace MagicaCloth
             if (IsEdit(obj) == false)
                 return;
             EditEnable = false;
-            EditInstanceId = 0;
+            EditEntityId = default;
             EditObject = null;
             Clear();
 
@@ -178,7 +178,7 @@ namespace MagicaCloth
 
         public bool IsEdit(UnityEngine.Object obj)
         {
-            return EditEnable && EditInstanceId == obj.GetInstanceID();
+            return EditEnable && EditEntityId == obj.GetEntityId();
         }
 
         //=========================================================================================

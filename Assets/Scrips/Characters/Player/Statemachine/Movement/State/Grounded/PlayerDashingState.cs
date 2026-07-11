@@ -86,7 +86,7 @@ public class PlayerDashingState : PlayerGroundedState
 
         UpdateTargetRotation(dashDirection, false);
 
-        stateMachine.Player.Rigidbody.velocity = dashDirection * GetMovementSpeed();
+        stateMachine.Player.Rigidbody.linearVelocity = dashDirection * GetMovementSpeed();
     }
 
     private void UpdateConsecutiveDashes()

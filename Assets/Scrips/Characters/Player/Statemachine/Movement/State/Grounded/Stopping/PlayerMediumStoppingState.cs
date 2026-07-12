@@ -15,7 +15,7 @@ public class PlayerMediumStoppingState : PlayerStoppingState
             AnimationData.FixedTransitionDuration);
 
         stateMachine.ReusableData.MovementDecelerationForce = GroundedData.StopData.MediumDecelerationForce;
-        stateMachine.ReusableData.CurrentJumpForce = AirborneData.JumpData.MediumForce;
+        stateMachine.ReusableData.CurrentJumpForce = AirborneData.JumpData.WeakForce;
     }
 
     #endregion

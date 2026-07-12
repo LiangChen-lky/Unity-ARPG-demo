@@ -10,6 +10,7 @@ public class PlayerAttackState : PlayerGroundedState
     private bool canExecuteCombo;
     private int currentComboIndex;
     private int nextComboIndex;
+    private Coroutine executeComboColdCoroutine;
     private Coroutine stopComboCoroutine;
     private bool hasHandledAttackExit;
 
@@ -36,6 +37,11 @@ public class PlayerAttackState : PlayerGroundedState
 
     public override void Exit()
     {
+        StopAttackCoroutines();
+        canExecuteCombo = false;
+        currentComboIndex = 0;
+        nextComboIndex = 0;
+
         combatExecutor.EndAttack();
         stateMachine.Player.WeaponController?.CancelAttack();
 
@@ -84,7 +90,12 @@ public class PlayerAttackState : PlayerGroundedState
         hasHandledAttackExit = false;
 
         float comboColdTime = attackData.CurrentComboList.TryGetComboColdTime(currentComboIndex);
-        stateMachine.Player.StartCoroutine(ExecuteComboCold(comboColdTime));
+        if (executeComboColdCoroutine != null)
+        {
+            stateMachine.Player.StopCoroutine(executeComboColdCoroutine);
+        }
+
+        executeComboColdCoroutine = stateMachine.Player.StartCoroutine(ExecuteComboCold(comboColdTime));
 
         if (stopComboCoroutine != null)
         {
@@ -112,6 +123,7 @@ public class PlayerAttackState : PlayerGroundedState
         }
 
         canExecuteCombo = true;
+        executeComboColdCoroutine = null;
     }
 
     private IEnumerator StopCombo(float coldTime)
@@ -124,6 +136,22 @@ public class PlayerAttackState : PlayerGroundedState
         }
 
         nextComboIndex = 0;
+        stopComboCoroutine = null;
+    }
+
+    private void StopAttackCoroutines()
+    {
+        if (executeComboColdCoroutine != null)
+        {
+            stateMachine.Player.StopCoroutine(executeComboColdCoroutine);
+            executeComboColdCoroutine = null;
+        }
+
+        if (stopComboCoroutine != null)
+        {
+            stateMachine.Player.StopCoroutine(stopComboCoroutine);
+            stopComboCoroutine = null;
+        }
     }
 
     protected override void OnAttackStarted(InputAction.CallbackContext context)

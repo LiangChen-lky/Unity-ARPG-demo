@@ -20,7 +20,7 @@ public class PlayerIdlingState : PlayerGroundedState
 
         stateMachine.Player.Animator.CrossFadeInFixedTime(
             AnimationData.IdlingAnimationHash,
-            AnimationData.TransitionDuration);
+            AnimationData.FixedTransitionDuration);
     }
 
     public override void Update()

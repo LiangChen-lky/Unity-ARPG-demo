@@ -11,7 +11,9 @@ public class PlayerHardLandingState : PlayerLandingState
         base.Enter();
 
         stateMachine.ReusableData.MovementSpeedModifier = 0f;
-        stateMachine.Player.Animator.CrossFade(AnimationData.HardLandingAnimationHash, AnimationData.TransitionDuration);
+        stateMachine.Player.Animator.CrossFade(
+            AnimationData.HardLandingAnimationHash,
+            AnimationData.NormalizedTransitionDuration);
         stateMachine.Player.Input.PlayerActions.Movement.Disable();
 
         ResetVelocity();

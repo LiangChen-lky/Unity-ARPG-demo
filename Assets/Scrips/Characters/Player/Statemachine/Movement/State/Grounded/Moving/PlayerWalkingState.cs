@@ -12,7 +12,9 @@ public class PlayerWalkingState : PlayerMovingState
 
         stateMachine.ReusableData.MovementSpeedModifier = GroundedData.WalkData.SpeedModifier;
         stateMachine.ReusableData.CurrentJumpForce = AirborneData.JumpData.WeakForce;
-        stateMachine.Player.Animator.CrossFade(AnimationData.WalkingAnimationHash, AnimationData.TransitionDuration);
+        stateMachine.Player.Animator.CrossFade(
+            AnimationData.WalkingAnimationHash,
+            AnimationData.NormalizedTransitionDuration);
     }
 
     protected override void OnMovementCanceled(InputAction.CallbackContext context)

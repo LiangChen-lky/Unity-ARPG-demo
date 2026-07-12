@@ -15,7 +15,9 @@ public class PlayerRollingState : PlayerLandingState
         base.Enter();
 
         stateMachine.ReusableData.MovementSpeedModifier = rollData.SpeedModifier;
-        stateMachine.Player.Animator.CrossFade(AnimationData.RollingAnimationHash, AnimationData.TransitionDuration);
+        stateMachine.Player.Animator.CrossFade(
+            AnimationData.RollingAnimationHash,
+            AnimationData.NormalizedTransitionDuration);
         stateMachine.ReusableData.ShouldSprint = false;
     }
 

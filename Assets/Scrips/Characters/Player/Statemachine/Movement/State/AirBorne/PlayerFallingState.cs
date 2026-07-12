@@ -23,7 +23,7 @@ public class PlayerFallingState : PlayerAirborneState
         
         // stateMachine.Player.Animator.Play(AnimationData.GetAnimationHash(AnimationData.FallingAnimationName));
         stateMachine.Player.Animator.CrossFade(AnimationData.FallingAnimationHash,
-            AnimationData.TransitionDuration);
+            AnimationData.NormalizedTransitionDuration);
     }
 
     public override void PhysicsUpdate()

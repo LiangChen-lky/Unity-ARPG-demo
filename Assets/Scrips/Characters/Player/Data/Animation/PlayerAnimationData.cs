@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [Serializable]
 public class PlayerAnimationData
 {
-    [field: SerializeField] public float TransitionDuration { get; private set; } = 0.05f;
+    [field: FormerlySerializedAs("<TransitionDuration>k__BackingField")]
+    [field: SerializeField] public float NormalizedTransitionDuration { get; private set; } = 0.1f;
+    [field: SerializeField] public float FixedTransitionDuration { get; private set; } = 0.1f;
 
     [field: Header("Player State Names")]
     [field: SerializeField] private string idlingAnimationName = "Idle";

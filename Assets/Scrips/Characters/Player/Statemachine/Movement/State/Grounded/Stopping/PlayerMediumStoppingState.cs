@@ -12,7 +12,7 @@ public class PlayerMediumStoppingState : PlayerStoppingState
 
         stateMachine.Player.Animator.CrossFadeInFixedTime(
             AnimationData.MediumStoppingAnimationHash,
-            AnimationData.TransitionDuration);
+            AnimationData.FixedTransitionDuration);
 
         stateMachine.ReusableData.MovementDecelerationForce = GroundedData.StopData.MediumDecelerationForce;
         stateMachine.ReusableData.CurrentJumpForce = AirborneData.JumpData.MediumForce;

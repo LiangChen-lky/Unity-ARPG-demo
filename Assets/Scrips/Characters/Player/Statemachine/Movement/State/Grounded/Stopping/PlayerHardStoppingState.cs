@@ -12,7 +12,7 @@ public class PlayerHardStoppingState : PlayerStoppingState
         
         stateMachine.Player.Animator.CrossFadeInFixedTime(
             AnimationData.HardStoppingAnimationHash,
-            AnimationData.TransitionDuration);
+            AnimationData.FixedTransitionDuration);
 
         stateMachine.ReusableData.MovementDecelerationForce = GroundedData.StopData.HardDecelerationForce;
         stateMachine.ReusableData.CurrentJumpForce = AirborneData.JumpData.StrongForce;

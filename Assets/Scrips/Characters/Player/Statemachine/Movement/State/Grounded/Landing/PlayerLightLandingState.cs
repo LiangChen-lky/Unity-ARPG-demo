@@ -12,7 +12,9 @@ public class PlayerLightLandingState : PlayerLandingState
 
         stateMachine.ReusableData.MovementSpeedModifier = 0f;
         stateMachine.ReusableData.CurrentJumpForce = AirborneData.JumpData.StationaryForce;
-        stateMachine.Player.Animator.CrossFade(AnimationData.LightLandingAnimationHash, AnimationData.TransitionDuration);
+        stateMachine.Player.Animator.CrossFade(
+            AnimationData.LightLandingAnimationHash,
+            AnimationData.NormalizedTransitionDuration);
 
         ResetVelocity();
     }

@@ -19,6 +19,10 @@ MonoBehaviour:
     walkingAnimationName: Walk
     runningAnimationName: Run
     dashingAnimationName: Dash
+    dodgeForwardAnimationName: Dodge Forward
+    dodgeBackwardAnimationName: Dodge Backward
+    dodgeLeftAnimationName: Dodge Left
+    dodgeRightAnimationName: Dodge Right
     sprintingAnimationName: Sprint
     lightStoppingAnimationName: LightStop
     mediumStoppingAnimationName: MediumStop

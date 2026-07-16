@@ -4,6 +4,7 @@ using System.Linq;
 using MagicaCloth;
 using NUnit.Framework;
 using UnityEditor;
+using UnityEditor.Animations;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -14,6 +15,24 @@ using UnityEngine.TestTools;
 public class Unity6MigrationBehaviorTests
 {
     private const string SampleScenePath = "Assets/Scenes/SampleScene.unity";
+    private const string PlayerAnimatorControllerPath =
+        "Assets/Animations/Characters/Player/PlayerAnimatorController.controller";
+
+    private static readonly string[] DirectionalDodgeStateNames =
+    {
+        "Dodge Forward",
+        "Dodge Backward",
+        "Dodge Left",
+        "Dodge Right"
+    };
+
+    private static readonly string[] DirectionalDodgeClipPaths =
+    {
+        "Assets/Animations/Characters/Player/Clip/Movement/Grounded/Dodge Forward.anim",
+        "Assets/Animations/Characters/Player/Clip/Movement/Grounded/Dodge Backward.anim",
+        "Assets/Animations/Characters/Player/Clip/Movement/Grounded/Dodge Left.anim",
+        "Assets/Animations/Characters/Player/Clip/Movement/Grounded/Dodge Right.anim"
+    };
 
     [UnityTearDown]
     public IEnumerator ExitPlayModeAfterTest()
@@ -70,6 +89,36 @@ public class Unity6MigrationBehaviorTests
                 $"Unsupported shader '{material.shader.name}' on {materialPath}");
             Assert.That(ShaderUtil.ShaderHasError(material.shader), Is.False,
                 $"Shader '{material.shader.name}' has compile errors on {materialPath}");
+        }
+    }
+
+    [Test]
+    [Category("Unity6Migration")]
+    public void DirectionalDodgeAnimationsHaveStatesAndTransitionEvents()
+    {
+        AnimatorController controller = AssetDatabase.LoadAssetAtPath<AnimatorController>(
+            PlayerAnimatorControllerPath);
+        Assert.That(controller, Is.Not.Null, PlayerAnimatorControllerPath);
+
+        AnimatorStateMachine movementStateMachine = controller.layers
+            .SelectMany(layer => layer.stateMachine.stateMachines)
+            .Select(stateMachine => stateMachine.stateMachine)
+            .Single(stateMachine => stateMachine.name == "Movement");
+
+        string[] stateNames = movementStateMachine.states
+            .Select(state => state.state.name)
+            .ToArray();
+        CollectionAssert.IsSubsetOf(DirectionalDodgeStateNames, stateNames);
+
+        foreach (string clipPath in DirectionalDodgeClipPaths)
+        {
+            AnimationClip clip = AssetDatabase.LoadAssetAtPath<AnimationClip>(clipPath);
+            Assert.That(clip, Is.Not.Null, clipPath);
+            Assert.That(
+                clip.events.Any(animationEvent => animationEvent.functionName ==
+                    nameof(PlayerAnimationEventTrigger.TriggerOnMovementStateAnimationTransitionEvent)),
+                Is.True,
+                $"{clipPath} must contain the movement transition event.");
         }
     }
 

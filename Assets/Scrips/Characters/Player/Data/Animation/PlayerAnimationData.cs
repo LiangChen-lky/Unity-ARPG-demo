@@ -15,6 +15,10 @@ public class PlayerAnimationData
     [field: SerializeField] private string walkingAnimationName = "Walk";
     [field: SerializeField] private string runningAnimationName = "Run";
     [field: SerializeField] private string dashingAnimationName = "Dash";
+    [field: SerializeField] private string dodgeForwardAnimationName = "Dodge Forward";
+    [field: SerializeField] private string dodgeBackwardAnimationName = "Dodge Backward";
+    [field: SerializeField] private string dodgeLeftAnimationName = "Dodge Left";
+    [field: SerializeField] private string dodgeRightAnimationName = "Dodge Right";
     [field: SerializeField] private string sprintingAnimationName = "Sprint";
     [field: SerializeField] private string lightStoppingAnimationName = "LightStop";
     [field: SerializeField] private string mediumStoppingAnimationName = "MediumStop";
@@ -29,6 +33,10 @@ public class PlayerAnimationData
     public int WalkingAnimationHash { get; private set; }
     public int RunningAnimationHash { get; private set; }
     public int DashingAnimationHash { get; private set; }
+    public int DodgeForwardAnimationHash { get; private set; }
+    public int DodgeBackwardAnimationHash { get; private set; }
+    public int DodgeLeftAnimationHash { get; private set; }
+    public int DodgeRightAnimationHash { get; private set; }
     public int SprintingAnimationHash { get; private set; }
     public int LightStoppingAnimationHash { get; private set; }
     public int MediumStoppingAnimationHash { get; private set; }
@@ -45,6 +53,10 @@ public class PlayerAnimationData
         WalkingAnimationHash = Animator.StringToHash(walkingAnimationName);
         RunningAnimationHash = Animator.StringToHash(runningAnimationName);
         DashingAnimationHash = Animator.StringToHash(dashingAnimationName);
+        DodgeForwardAnimationHash = Animator.StringToHash(dodgeForwardAnimationName);
+        DodgeBackwardAnimationHash = Animator.StringToHash(dodgeBackwardAnimationName);
+        DodgeLeftAnimationHash = Animator.StringToHash(dodgeLeftAnimationName);
+        DodgeRightAnimationHash = Animator.StringToHash(dodgeRightAnimationName);
         SprintingAnimationHash = Animator.StringToHash(sprintingAnimationName);
         LightStoppingAnimationHash = Animator.StringToHash(lightStoppingAnimationName);
         MediumStoppingAnimationHash = Animator.StringToHash(mediumStoppingAnimationName);

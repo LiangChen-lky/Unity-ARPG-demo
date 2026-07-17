@@ -26,6 +26,7 @@ public class PlayerAttackState : PlayerGroundedState
 
         stateMachine.ReusableData.MovementSpeedModifier = 0f;
         ResetVelocity();
+        // 玩家状态进入攻击后，只向武器发送表现指令；命中检测仍由 CombatExecutor 执行。
         stateMachine.Player.WeaponController?.StartAttack();
         combatExecutor.BeginAttack();
 
@@ -43,6 +44,7 @@ public class PlayerAttackState : PlayerGroundedState
         nextComboIndex = 0;
 
         combatExecutor.EndAttack();
+        // 无论攻击自然结束还是被其他状态打断，都要让武器回到收刀表现。
         stateMachine.Player.WeaponController?.CancelAttack();
 
         base.Exit();

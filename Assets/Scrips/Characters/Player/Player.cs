@@ -14,10 +14,12 @@ public class Player : MonoBehaviour
     [field: SerializeField] public PlayerCameraUtility CameraUtility { get; private set; }
 
     [Header("Combat")]
+    // 场景中实际挂载的武器控制器；Player 通过接口驱动武器，不依赖具体 Sword 类型。
     [SerializeField] private MonoBehaviour weaponControllerSource;
     
     public Animator Animator { get; private set; }
     public PlayerInput Input { get; private set; }
+    // 玩家状态机唯一使用的武器入口，避免状态机和场景对象耦合到具体武器类。
     public IWeaponController WeaponController => weaponControllerSource as IWeaponController;
     public Rigidbody Rigidbody { get; private set; }
     public Transform MainCameraTransform { get; private set; }

@@ -398,6 +398,8 @@ public class PlayerMovementState : IState, ITriggerHandler
     
     protected virtual void OnAttackStarted(InputAction.CallbackContext context)
     {
+        // 连击数据是进入攻击状态的硬前提，先校验再切换状态，避免留下半初始化的攻击状态。
+        stateMachine.AttackState.ValidateConfiguration();
         stateMachine.ChangeState(stateMachine.AttackState);
     }
     #endregion

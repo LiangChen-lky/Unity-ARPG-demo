@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -20,8 +21,12 @@ public class PlayerAttackState : PlayerGroundedState
         combatExecutor = stateMachine.CombatExecutor;
     }
 
+    #region IState Methods
+
     public override void Enter()
     {
+        // 在注册输入、改变速度和驱动武器之前失败，避免攻击状态只完成了一半初始化。
+        ValidateConfiguration();
         base.Enter();
 
         stateMachine.ReusableData.MovementSpeedModifier = 0f;
@@ -58,6 +63,30 @@ public class PlayerAttackState : PlayerGroundedState
         TryHandleAttackAnimationExit();
     }
 
+    public override void OnAnimationExitEnvent()
+    {
+        HandleAttackFinished();
+    }
+
+    #endregion
+
+    #region Main Methods
+
+    /// <summary>
+    /// 校验攻击状态的必要配置。
+    /// 缺少连击数据属于开发配置错误，不能被当作一次正常的攻击结束处理。
+    /// </summary>
+    public void ValidateConfiguration()
+    {
+        if (combatExecutor.HasComboData)
+        {
+            return;
+        }
+
+        throw new InvalidOperationException(
+            "PlayerAttackState requires a valid ComboList with at least one ComboConfig.");
+    }
+
     private void RunCombatEvents()
     {
         if (!combatExecutor.HasComboData)
@@ -71,12 +100,6 @@ public class PlayerAttackState : PlayerGroundedState
 
     private void ExecuteCombo()
     {
-        if (!combatExecutor.HasComboData)
-        {
-            HandleAttackFinished();
-            return;
-        }
-
         currentComboIndex = nextComboIndex;
         combatExecutor.BeginCombo(currentComboIndex);
 
@@ -156,19 +179,6 @@ public class PlayerAttackState : PlayerGroundedState
         }
     }
 
-    protected override void OnAttackStarted(InputAction.CallbackContext context)
-    {
-        if (canExecuteCombo)
-        {
-            ExecuteCombo();
-        }
-    }
-
-    public override void OnAnimationExitEnvent()
-    {
-        HandleAttackFinished();
-    }
-
     private void TryHandleAttackAnimationExit()
     {
         if (hasHandledAttackExit)
@@ -193,4 +203,18 @@ public class PlayerAttackState : PlayerGroundedState
         hasHandledAttackExit = true;
         stateMachine.ChangeState(stateMachine.AttackRecoveryState);
     }
+
+    #endregion
+
+    #region Input Methods
+
+    protected override void OnAttackStarted(InputAction.CallbackContext context)
+    {
+        if (canExecuteCombo)
+        {
+            ExecuteCombo();
+        }
+    }
+
+    #endregion
 }

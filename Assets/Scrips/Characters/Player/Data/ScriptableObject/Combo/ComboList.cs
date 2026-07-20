@@ -19,15 +19,6 @@ public class ComboList : ScriptableObject //招式表
         return ComboConfigs[comboIndex].ComboName;
     }
     
-    public float TryGetComboColdTime(int comboIndex)
-    {
-        if (comboIndex < 0 || comboIndex >= ComboConfigs.Length)
-        {
-            return 0f;
-        }
-        return ComboConfigs[comboIndex].ColdTime;
-    }
-
     public ComboInteractionConfig TryGetComboInteractionConfig(int comboIndex, int eventIndex)
     {
         if (comboIndex < 0 || comboIndex >= ComboConfigs.Length)

@@ -4,7 +4,7 @@ This file provides guidance to coding agents working in this repository.
 
 ## Project Overview
 
-This is a Unity Action RPG demo built with Unity 2022.3.62f1c1. The player uses a
+This is a Unity Action RPG demo built with Unity 6.5.3f1 (6000.5.3f1). The player uses a
 hierarchical finite state machine (HFSM) for movement and combat state
 orchestration.
 
@@ -53,7 +53,7 @@ orchestration.
 
 ### Unity Editor
 
-- Use Unity 2022.3.62f1c1.
+- Use Unity 6.5.3f1 (6000.5.3f1).
 - Primary scene: `Assets/Scenes/SampleScene.unity`
 - Default target platform: Windows.
 

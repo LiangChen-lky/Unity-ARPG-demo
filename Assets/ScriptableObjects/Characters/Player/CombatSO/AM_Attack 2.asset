@@ -13,7 +13,6 @@ MonoBehaviour:
   m_Name: AM_Attack 2
   m_EditorClassIdentifier: 
   ComboName: AM_Attack02
-  ColdTime: 0.15
   InteractionConfig: []
   AttackDetectionConfig: []
   AttackFeedbackConfig: []

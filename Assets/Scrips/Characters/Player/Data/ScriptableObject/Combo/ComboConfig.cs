@@ -6,7 +6,6 @@ public class ComboConfig : ScriptableObject
 {
     [Header("基础数据")]
     public string ComboName;
-    public float ColdTime;
     
     [Header("交互数据")]
     public ComboInteractionConfig[] InteractionConfig;

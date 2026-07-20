@@ -35,6 +35,8 @@ MonoBehaviour:
   <GroundedData>k__BackingField:
     <BaseSpeed>k__BackingField: 5
     <GroundToFallRayDistance>k__BackingField: 1
+    <SidewaysCameraRecenteringData>k__BackingField: []
+    <BackwardsCameraRecenteringData>k__BackingField: []
     <SlopeSpeedAngle>k__BackingField:
       serializedVersion: 2
       m_Curve:
@@ -102,10 +104,13 @@ MonoBehaviour:
     <SprintData>k__BackingField:
       <SpeedModifier>k__BackingField: 1.7
       <SprintToRunTime>k__BackingField: 1
+      <RunToWalkTime>k__BackingField: 0.5
     <StopData>k__BackingField:
       <LightDecelerationForce>k__BackingField: 5
       <MediumDecelerationForce>k__BackingField: 6.5
       <HardDecelerationForce>k__BackingField: 5
+    <RollData>k__BackingField:
+      <SpeedModifier>k__BackingField: 1
   <AirborneData>k__BackingField:
     <JumpData>k__BackingField:
       <RotationData>k__BackingField:
@@ -210,10 +215,11 @@ MonoBehaviour:
       <JumpToGroundRayDistance>k__BackingField: 2
     <FallData>k__BackingField:
       <FallSpeedLimit>k__BackingField: 15
+      <MinimumDistanceToBeConsideredHardFall>k__BackingField: 3
   <AttackData>k__BackingField:
     <CurrentComboList>k__BackingField: {fileID: 11400000, guid: 8ddf8aa22e606de41bbf88e03f8f18f7,
       type: 2}
     <TargetLayer>k__BackingField:
       serializedVersion: 2
       m_Bits: 256
-    <RecoveryDuration>k__BackingField: 0.15
+    <RecoveryDuration>k__BackingField: 10

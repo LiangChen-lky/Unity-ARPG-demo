@@ -58,7 +58,7 @@ public class PlayerMovementState : IState, ITriggerHandler
         
     }
 
-    public virtual void OnAnimationExitEnvent()
+    public virtual void OnAnimationExitEnvent(AnimationEvent animationEvent)
     {
         
     }

@@ -14,9 +14,9 @@ public class PlayerAnimationEventTrigger : MonoBehaviour
         player.OnMovementStateAnimationEnterEvent();
     }
     
-    public void TriggerOnMovementStateAnimationExitEvent()
+    public void TriggerOnMovementStateAnimationExitEvent(AnimationEvent animationEvent)
     {
-        player.OnMovementStateAnimationExitEvent();
+        player.OnMovementStateAnimationExitEvent(animationEvent);
     }
     
     public void TriggerOnMovementStateAnimationTransitionEvent()

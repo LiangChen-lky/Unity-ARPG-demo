@@ -72,9 +72,18 @@ public class PlayerAttackState : PlayerGroundedState
         RunCombatEvents();
     }
 
-    public override void OnAnimationExitEnvent()
+    public override void OnAnimationExitEnvent(AnimationEvent animationEvent)
     {
-        // 如果攻击动画配置了退出事件，则由动画事件通知攻击状态结束。
+        AnimationClip sourceClip = animationEvent?.animatorClipInfo.clip;
+        string currentComboName = attackData.CurrentComboList.TryGetComboName(currentComboIndex);
+
+        // CrossFade 期间，旧 Combo 的 Exit 事件仍可能触发，不能用它结束新 Combo。
+        if (sourceClip == null || sourceClip.name != currentComboName)
+        {
+            return;
+        }
+
+        // 只有当前连击动画的退出事件才能结束攻击状态。
         HandleAttackFinished();
     }
 

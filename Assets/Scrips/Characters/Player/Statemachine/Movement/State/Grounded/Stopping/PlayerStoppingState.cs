@@ -1,3 +1,4 @@
+using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class PlayerStoppingState : PlayerGroundedState
@@ -36,9 +37,9 @@ public class PlayerStoppingState : PlayerGroundedState
         stateMachine.ChangeState(stateMachine.IdlingState);
     }
 
-    public override void OnAnimationExitEnvent()
+    public override void OnAnimationExitEnvent(AnimationEvent animationEvent)
     {
-        base.OnAnimationExitEnvent();
+        base.OnAnimationExitEnvent(animationEvent);
 
         ResetHorizontalVelocity();
     }

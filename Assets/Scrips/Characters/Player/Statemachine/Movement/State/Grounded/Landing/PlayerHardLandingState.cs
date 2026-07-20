@@ -1,3 +1,4 @@
+using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class PlayerHardLandingState : PlayerLandingState
@@ -38,7 +39,7 @@ public class PlayerHardLandingState : PlayerLandingState
         ResetVelocity();
     }
 
-    public override void OnAnimationExitEnvent()
+    public override void OnAnimationExitEnvent(AnimationEvent animationEvent)
     {
         stateMachine.Player.Input.PlayerActions.Movement.Enable();
     }

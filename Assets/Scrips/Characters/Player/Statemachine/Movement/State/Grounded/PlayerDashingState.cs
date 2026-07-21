@@ -63,9 +63,9 @@ public class PlayerDashingState : PlayerGroundedState
         SetBaseRotationData();
     }
 
-    public override void OnAnimationTransitionEvent()
+    public override void OnAnimationTransitionEvent(AnimationEvent animationEvent)
     {
-        base.OnAnimationTransitionEvent();
+        base.OnAnimationTransitionEvent(animationEvent);
         
 
         if (stateMachine.ReusableData.MovementInput == Vector2.zero)

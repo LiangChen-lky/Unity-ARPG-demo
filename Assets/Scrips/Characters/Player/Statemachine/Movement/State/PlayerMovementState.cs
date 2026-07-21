@@ -63,7 +63,7 @@ public class PlayerMovementState : IState, ITriggerHandler
         
     }
 
-    public virtual void OnAnimationTransitionEvent()
+    public virtual void OnAnimationTransitionEvent(AnimationEvent animationEvent)
     {
         
     }

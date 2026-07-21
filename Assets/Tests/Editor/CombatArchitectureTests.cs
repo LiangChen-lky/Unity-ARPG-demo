@@ -67,6 +67,28 @@ public class CombatArchitectureTests
     }
 
     [Test]
+    public void TransitionAnimationEventsCarrySourceClip()
+    {
+        MethodInfo stateTransitionMethod = typeof(IState).GetMethod(
+            nameof(IState.OnAnimationTransitionEvent));
+        MethodInfo triggerTransitionMethod = typeof(PlayerAnimationEventTrigger).GetMethod(
+            nameof(PlayerAnimationEventTrigger.TriggerOnMovementStateAnimationTransitionEvent));
+
+        Assert.That(stateTransitionMethod, Is.Not.Null);
+        Assert.That(triggerTransitionMethod, Is.Not.Null);
+        Assert.That(stateTransitionMethod.GetParameters(), Has.Length.EqualTo(1));
+        Assert.That(triggerTransitionMethod.GetParameters(), Has.Length.EqualTo(1));
+        Assert.That(stateTransitionMethod.GetParameters()[0].ParameterType, Is.EqualTo(typeof(AnimationEvent)));
+        Assert.That(triggerTransitionMethod.GetParameters()[0].ParameterType, Is.EqualTo(typeof(AnimationEvent)));
+
+        string attackStateSource = File.ReadAllText(ProjectPath(
+            "Assets/Scrips/Characters/Player/Statemachine/Movement/State/Attack/PlayerAttackState.cs"));
+
+        Assert.That(attackStateSource, Does.Contain("animationEvent.animatorClipInfo.clip"));
+        Assert.That(attackStateSource, Does.Contain("sourceClip.name != currentComboName"));
+    }
+
+    [Test]
     public void SampleSceneHasOnePlayerInputOwnerAndNoLegacyCombatData()
     {
         string scene = File.ReadAllText(ProjectPath("Assets/Scenes/SampleScene.unity"));

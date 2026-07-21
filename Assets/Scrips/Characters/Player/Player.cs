@@ -89,8 +89,8 @@ public class Player : MonoBehaviour
         movementStateMachine.OnAnimationExitEvent(animationEvent);
     }
     
-    public void OnMovementStateAnimationTransitionEvent()
+    public void OnMovementStateAnimationTransitionEvent(AnimationEvent animationEvent)
     {
-        movementStateMachine.OnAnimationTransitionEvent();
+        movementStateMachine.OnAnimationTransitionEvent(animationEvent);
     }
 }

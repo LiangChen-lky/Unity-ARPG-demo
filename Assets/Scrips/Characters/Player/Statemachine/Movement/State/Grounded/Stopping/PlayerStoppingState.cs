@@ -30,9 +30,9 @@ public class PlayerStoppingState : PlayerGroundedState
         DecelerateHorizontally();
     }
 
-    public override void OnAnimationTransitionEvent()
+    public override void OnAnimationTransitionEvent(AnimationEvent animationEvent)
     {
-        base.OnAnimationTransitionEvent();
+        base.OnAnimationTransitionEvent(animationEvent);
         
         stateMachine.ChangeState(stateMachine.IdlingState);
     }

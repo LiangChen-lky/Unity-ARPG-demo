@@ -87,9 +87,19 @@ public class PlayerAttackState : PlayerGroundedState
         HandleAttackFinished();
     }
 
-    public override void OnAnimationTransitionEvent()
+    public override void OnAnimationTransitionEvent(AnimationEvent animationEvent)
     {
-        // 动画进入后摇衔接区后，开放下一段连击输入。
+        // 获取当前连击动画名称，用于过滤 CrossFade 期间来自旧 Combo 的 Transition 事件。
+        string currentComboName = attackData.CurrentComboList.TryGetComboName(currentComboIndex);
+
+        AnimationClip sourceClip = animationEvent.animatorClipInfo.clip;
+        if (sourceClip.name != currentComboName)
+        {
+            // CrossFade 期间旧 Combo 的事件仍可能触发，不能打开当前 Combo 的输入窗口。
+            return;
+        }
+
+        // 当前攻击动画进入后摇衔接区后，开放下一段连击输入。
         canExecuteCombo = true;
     }
 

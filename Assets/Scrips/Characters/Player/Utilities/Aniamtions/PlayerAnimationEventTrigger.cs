@@ -19,9 +19,10 @@ public class PlayerAnimationEventTrigger : MonoBehaviour
         player.OnMovementStateAnimationExitEvent(animationEvent);
     }
     
-    public void TriggerOnMovementStateAnimationTransitionEvent()
+    public void TriggerOnMovementStateAnimationTransitionEvent(AnimationEvent animationEvent)
     {
-        player.OnMovementStateAnimationTransitionEvent();
+        // 将 AnimationEvent 原样转发，供攻击状态识别事件来自哪个动画 Clip。
+        player.OnMovementStateAnimationTransitionEvent(animationEvent);
     }
 
     private bool IsInAnimationTransition(int layerIndex = 0)

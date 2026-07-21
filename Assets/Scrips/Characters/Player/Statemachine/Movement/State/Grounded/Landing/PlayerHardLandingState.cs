@@ -44,9 +44,9 @@ public class PlayerHardLandingState : PlayerLandingState
         stateMachine.Player.Input.PlayerActions.Movement.Enable();
     }
 
-    public override void OnAnimationTransitionEvent()
+    public override void OnAnimationTransitionEvent(AnimationEvent animationEvent)
     {
-        base.OnAnimationTransitionEvent();
+        base.OnAnimationTransitionEvent(animationEvent);
 
         stateMachine.ChangeState(stateMachine.IdlingState);
     }

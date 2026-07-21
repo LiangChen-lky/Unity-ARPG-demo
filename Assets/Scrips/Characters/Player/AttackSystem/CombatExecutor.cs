@@ -8,7 +8,6 @@ public sealed class CombatExecutor
     private readonly ICombatEffectSpawner effectSpawner;
     private readonly HashSet<IHitReceiver> hitReceivers = new();
 
-    private Transform currentTarget;
     private int currentComboIndex;
     private int attackDetectionEventIndex;
     private int fxEventIndex;
@@ -31,23 +30,21 @@ public sealed class CombatExecutor
 
     public void BeginAttack()
     {
-        currentTarget = null;
         ResetEventIndexes();
     }
 
     public void EndAttack()
     {
-        currentTarget = null;
         hitReceivers.Clear();
         ResetEventIndexes();
     }
 
     public void BeginCombo(int comboIndex)
     {
+        // 这里只重置本段攻击事件游标，不搜索目标或改变玩家朝向。
+        // 普通攻击沿用当前朝向，锁定目标后的转向由玩家状态机显式负责。
         currentComboIndex = comboIndex;
         ResetEventIndexes();
-        FindTarget();
-        LookAtTarget();
     }
 
     public void Update(float normalizedTime)
@@ -163,49 +160,6 @@ public sealed class CombatExecutor
             fxConfig.Scale);
 
         fxEventIndex++;
-    }
-
-    private void FindTarget()
-    {
-        if (currentTarget != null || attackData == null)
-        {
-            return;
-        }
-
-        Collider[] targets = Physics.OverlapBox(
-            owner.position,
-            new Vector3(4f, 4f, 4f),
-            Quaternion.identity,
-            attackData.TargetLayer,
-            QueryTriggerInteraction.Ignore);
-
-        float minDistance = float.MaxValue;
-        foreach (Collider target in targets)
-        {
-            float distance = Vector3.Distance(owner.position, target.transform.position);
-            if (distance >= minDistance)
-            {
-                continue;
-            }
-
-            currentTarget = target.transform;
-            minDistance = distance;
-        }
-    }
-
-    private void LookAtTarget()
-    {
-        if (currentTarget == null)
-        {
-            return;
-        }
-
-        Vector3 direction = currentTarget.position - owner.position;
-        direction.y = 0f;
-        if (direction.sqrMagnitude > Mathf.Epsilon)
-        {
-            owner.forward = direction.normalized;
-        }
     }
 
     private void ResetEventIndexes()

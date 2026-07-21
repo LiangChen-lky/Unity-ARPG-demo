@@ -54,6 +54,19 @@ public class CombatArchitectureTests
     }
 
     [Test]
+    public void CombatExecutorDoesNotControlOwnerFacing()
+    {
+        string source = File.ReadAllText(ProjectPath(
+            "Assets/Scrips/Characters/Player/AttackSystem/CombatExecutor.cs"));
+
+        Assert.That(source, Does.Not.Contain("currentTarget"));
+        Assert.That(source, Does.Not.Contain("FindTarget"));
+        Assert.That(source, Does.Not.Contain("LookAtTarget"));
+        Assert.That(source, Does.Not.Contain("owner.forward ="));
+        Assert.That(source, Does.Contain("owner.forward"));
+    }
+
+    [Test]
     public void SampleSceneHasOnePlayerInputOwnerAndNoLegacyCombatData()
     {
         string scene = File.ReadAllText(ProjectPath("Assets/Scenes/SampleScene.unity"));

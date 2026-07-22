@@ -84,13 +84,4 @@ public class ComboList : ScriptableObject //招式表
         return ComboConfigs[comboIndex].SFXConfig[eventIndex];
     }
     
-    public MoveOffsetConfig TryGetSelfMoveOffsetConfig(int comboIndex)
-    {
-        if (comboIndex < 0 || comboIndex >= ComboConfigs.Length)
-        {
-            return null;
-        }
-        return ComboConfigs[comboIndex].SelfMoveOffsetConfig;
-    }
-    
 }

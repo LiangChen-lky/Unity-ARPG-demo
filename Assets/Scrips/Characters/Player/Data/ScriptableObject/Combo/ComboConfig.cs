@@ -22,8 +22,6 @@ public class ComboConfig : ScriptableObject
     [Header("音效数据")]
     public SFXConfig[] SFXConfig;
 
-    [Header("自身位移补偿数据")]
-    public MoveOffsetConfig SelfMoveOffsetConfig;
 }
 
 [Serializable]
@@ -71,16 +69,5 @@ public class AttackFeedbackConfig
     // 屏幕震动参数。
     public float Strength;
     public float Frequency;
-    public float Duration;
-}
-
-[Serializable]
-public class MoveOffsetConfig
-{
-    // 攻击者自身位移补偿曲线与方向。
-    public float StartTime;
-    public AnimationCurve MoveCurve;
-    public MoveOffsetDirection MoveOffsetDirection;
-    public float Scale;
     public float Duration;
 }

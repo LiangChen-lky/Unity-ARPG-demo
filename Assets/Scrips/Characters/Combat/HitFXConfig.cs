@@ -9,5 +9,4 @@ public class HitFXConfig : ScriptableObject
     {
         return HitFXList[Random.Range(0, HitFXList.Length)];
     }
-    
 }

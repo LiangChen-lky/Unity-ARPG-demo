@@ -28,16 +28,18 @@ public class CombatArchitectureTests
     }
 
     [Test]
-    public void CombatReceiverUsesHitContextContract()
+    public void HitReceiverBaseUsesHitContextContract()
     {
-        Assert.That(typeof(IHitReceiver).IsAssignableFrom(typeof(CombatControllerBase)), Is.True);
+        Assert.That(typeof(IHitReceiver).IsAssignableFrom(typeof(HitReceiverBase)), Is.True);
 
-        MethodInfo receiveHit = typeof(CombatControllerBase).GetMethod(nameof(IHitReceiver.ReceiveHit));
+        MethodInfo receiveHit = typeof(HitReceiverBase).GetMethod(nameof(IHitReceiver.ReceiveHit));
         Assert.That(receiveHit, Is.Not.Null);
         Assert.That(receiveHit.GetParameters(), Has.Length.EqualTo(1));
         Assert.That(receiveHit.GetParameters()[0].ParameterType, Is.EqualTo(typeof(HitContext)));
         Assert.That(typeof(PlayerAttackData).GetProperty("HitFXList"), Is.Null);
-        Assert.That(typeof(PlayerAttackData).GetProperty("FXPositionList"), Is.Null);
+        Assert.That(typeof(PlayerAttackData).GetProperty("HitFXPosition"), Is.Null);
+        Assert.That(typeof(HitReceiverBase).GetProperty("FXPositionList"), Is.Null);
+        Assert.That(typeof(HitReceiverBase).GetProperty("HitFXPosition").PropertyType, Is.EqualTo(typeof(Transform)));
     }
 
     [Test]
@@ -46,7 +48,7 @@ public class CombatArchitectureTests
         string executorSource = File.ReadAllText(ProjectPath(
             "Assets/Scrips/Characters/Player/AttackSystem/CombatExecutor.cs"));
         string receiverSource = File.ReadAllText(ProjectPath(
-            "Assets/Scrips/Characters/Player/AttackSystem/CombatControllerBase.cs"));
+            "Assets/Scrips/Characters/Combat/HitReceiverBase.cs"));
 
         Assert.That(executorSource, Does.Not.Contain("TryGetTargetMoveOffsetConfig"));
         Assert.That(executorSource, Does.Not.Contain("HitAnimationName"));
@@ -64,7 +66,7 @@ public class CombatArchitectureTests
         {
             "Physics.",
             "ToolManager",
-            "CombatControllerBase",
+            "HitReceiverBase",
             "ComboInteractionConfig",
             "MoveOffsetConfig"
         };
@@ -73,6 +75,44 @@ public class CombatArchitectureTests
         {
             Assert.That(source, Does.Not.Contain(dependency));
         }
+    }
+
+    [Test]
+    public void SharedCombatTypesStayOutsidePlayerAttackSystem()
+    {
+        string[] sharedCombatPaths =
+        {
+            "Assets/Scrips/Characters/Combat/HitContract.cs",
+            "Assets/Scrips/Characters/Combat/CombatEffectSpawner.cs",
+            "Assets/Scrips/Characters/Combat/HitFXConfig.cs",
+            "Assets/Scrips/Characters/Combat/HitReceiverBase.cs"
+        };
+        string[] removedNestedCombatPaths =
+        {
+            "Assets/Scrips/Characters/Combat/Contracts/IHitReceiver.cs",
+            "Assets/Scrips/Characters/Combat/Contracts/HitContext.cs",
+            "Assets/Scrips/Characters/Combat/Contracts/AttackForce.cs",
+            "Assets/Scrips/Characters/Combat/Effects/CombatEffectSpawner.cs",
+            "Assets/Scrips/Characters/Combat/Effects/HitFXConfig.cs",
+            "Assets/Scrips/Characters/Combat/Receivers/CombatReceiverBase.cs",
+            "Assets/Scrips/Characters/Combat/CombatReceiverBase.cs",
+            "Assets/Scrips/Characters/Player/AttackSystem/IHitReceiver.cs",
+            "Assets/Scrips/Characters/Player/AttackSystem/HitContext.cs",
+            "Assets/Scrips/Characters/Player/AttackSystem/CombatControllerBase.cs",
+            "Assets/Scrips/Characters/Player/AttackSystem/Effect/CombatEffectSpawner.cs",
+            "Assets/Scrips/Characters/Player/AttackSystem/Effect/HitFXConfig.cs"
+        };
+
+        foreach (string path in sharedCombatPaths)
+        {
+            Assert.That(File.Exists(ProjectPath(path)), Is.True, path);
+        }
+
+        foreach (string path in removedNestedCombatPaths)
+        {
+            Assert.That(File.Exists(ProjectPath(path)), Is.False, path);
+        }
+
     }
 
     [Test]
@@ -110,7 +150,10 @@ public class CombatArchitectureTests
         Assert.That(getWorldDetectionBox, Is.Not.Null);
         getWorldDetectionBox.Invoke(null, parameters);
 
-        Assert.That((Vector3)parameters[2], Is.EqualTo(new Vector3(7f, 2f, -4f)));
+        // 旋转后的浮点坐标存在微小误差，使用容差验证真实的检测框位置。
+        Assert.That(
+            Vector3.Distance((Vector3)parameters[2], new Vector3(7f, 2f, -4f)),
+            Is.LessThan(0.001f));
         Assert.That(
             Quaternion.Angle((Quaternion)parameters[3], Quaternion.Euler(0f, 105f, 0f)),
             Is.LessThan(0.001f));
@@ -204,7 +247,10 @@ public class CombatArchitectureTests
             "Assets/Scrips/Core/Events/Events/IEvent.cs",
             "Assets/Scrips/Core/Patterns/Singleton/Singleton.cs",
             "Assets/Scrips/Core/Patterns/Singleton/MonoSingleton.cs",
-            "Assets/Scrips/Weapons/Data/WeaponReusableData.cs"
+            "Assets/Scrips/Weapons/Data/WeaponReusableData.cs",
+            // 当前没有执行链路的玩家攻击位移数据必须随实现一起移除。
+            "Assets/Scrips/Characters/Player/AttackSystem/ExpandClass.cs",
+            "Assets/Scrips/Characters/Player/AttackSystem/MoveOffsetDirection.cs"
         };
 
         foreach (string path in removedPaths)

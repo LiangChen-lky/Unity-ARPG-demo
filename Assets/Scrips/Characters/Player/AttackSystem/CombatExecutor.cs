@@ -71,12 +71,10 @@ public sealed class CombatExecutor
 
         ComboInteractionConfig interactionConfig =
             comboList.TryGetComboInteractionConfig(currentComboIndex, attackDetectionEventIndex);
-        MoveOffsetConfig moveOffsetConfig =
-            comboList.TryGetTargetMoveOffsetConfig(currentComboIndex, attackDetectionEventIndex);
 
         if (interactionConfig != null)
         {
-            DispatchHits(detectionConfig, interactionConfig, moveOffsetConfig);
+            DispatchHits(detectionConfig, interactionConfig);
         }
 
         attackDetectionEventIndex++;
@@ -84,8 +82,7 @@ public sealed class CombatExecutor
 
     private void DispatchHits(
         AttackDetectionConfig detectionConfig,
-        ComboInteractionConfig interactionConfig,
-        MoveOffsetConfig moveOffsetConfig)
+        ComboInteractionConfig interactionConfig)
     {
         Vector3 boxPosition =
             owner.forward * detectionConfig.Position.z +
@@ -99,7 +96,7 @@ public sealed class CombatExecutor
             attackData.TargetLayer,
             QueryTriggerInteraction.Ignore);
 
-        HitContext hitContext = CreateHitContext(interactionConfig, moveOffsetConfig);
+        HitContext hitContext = CreateHitContext(interactionConfig);
         hitReceivers.Clear();
 
         foreach (Collider target in targets)
@@ -120,29 +117,13 @@ public sealed class CombatExecutor
         }
     }
 
-    private HitContext CreateHitContext(
-        ComboInteractionConfig interactionConfig,
-        MoveOffsetConfig moveOffsetConfig)
+    private HitContext CreateHitContext(ComboInteractionConfig interactionConfig)
     {
-        HitMovement movement = default;
-        if (moveOffsetConfig != null)
-        {
-            movement = new HitMovement(
-                moveOffsetConfig.MoveCurve,
-                owner.GetMoveOffsetDirection(moveOffsetConfig.MoveOffsetDirection),
-                moveOffsetConfig.StartTime,
-                moveOffsetConfig.Duration,
-                moveOffsetConfig.Scale);
-        }
-
         return new HitContext(
             owner.position,
             owner.forward,
-            interactionConfig.HitName,
-            interactionConfig.Weapon,
             interactionConfig.AttackForce,
-            interactionConfig.Damage,
-            movement);
+            interactionConfig.Damage);
     }
 
     private void RunFXEvent(float normalizedTime)

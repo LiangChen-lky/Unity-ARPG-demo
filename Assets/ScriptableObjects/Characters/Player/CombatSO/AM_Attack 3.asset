@@ -29,4 +29,3 @@ MonoBehaviour:
     MoveOffsetDirection: 0
     Scale: 0
     Duration: 0
-  TargetMoveOffsetConfig: []

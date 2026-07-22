@@ -7,17 +7,24 @@ using UnityEngine;
 public class CombatArchitectureTests
 {
     [Test]
-    public void HitMovementEvaluatesConfiguredScale()
+    public void HitContextContainsOnlyAttackerOwnedSignalData()
     {
-        HitMovement movement = new HitMovement(
-            AnimationCurve.Linear(0f, 0f, 1f, 1f),
+        HitContext context = new HitContext(
+            Vector3.zero,
             Vector3.forward,
-            0f,
-            1f,
-            2f);
+            AttackForce.Medium,
+            12f);
 
-        Assert.That(movement.IsValid, Is.True);
-        Assert.That(movement.Evaluate(0.25f), Is.EqualTo(0.5f).Within(0.0001f));
+        Assert.That(context.SourcePosition, Is.EqualTo(Vector3.zero));
+        Assert.That(context.SourceForward, Is.EqualTo(Vector3.forward));
+        Assert.That(context.Force, Is.EqualTo(AttackForce.Medium));
+        Assert.That(context.Damage, Is.EqualTo(12f));
+        Assert.That(typeof(HitContext).GetProperty("HitAnimationName"), Is.Null);
+        Assert.That(typeof(HitContext).GetProperty("Weapon"), Is.Null);
+        Assert.That(typeof(HitContext).GetProperty("Movement"), Is.Null);
+        Assert.That(typeof(ComboInteractionConfig).GetField("HitName"), Is.Null);
+        Assert.That(typeof(ComboInteractionConfig).GetField("Hit_AirName"), Is.Null);
+        Assert.That(typeof(ComboInteractionConfig).GetField("Weapon"), Is.Null);
     }
 
     [Test]
@@ -31,6 +38,21 @@ public class CombatArchitectureTests
         Assert.That(receiveHit.GetParameters()[0].ParameterType, Is.EqualTo(typeof(HitContext)));
         Assert.That(typeof(PlayerAttackData).GetProperty("HitFXList"), Is.Null);
         Assert.That(typeof(PlayerAttackData).GetProperty("FXPositionList"), Is.Null);
+    }
+
+    [Test]
+    public void CombatExecutorDoesNotSpecifyTargetReactions()
+    {
+        string executorSource = File.ReadAllText(ProjectPath(
+            "Assets/Scrips/Characters/Player/AttackSystem/CombatExecutor.cs"));
+        string receiverSource = File.ReadAllText(ProjectPath(
+            "Assets/Scrips/Characters/Player/AttackSystem/CombatControllerBase.cs"));
+
+        Assert.That(executorSource, Does.Not.Contain("TryGetTargetMoveOffsetConfig"));
+        Assert.That(executorSource, Does.Not.Contain("HitAnimationName"));
+        Assert.That(executorSource, Does.Not.Contain("interactionConfig.Weapon"));
+        Assert.That(receiverSource, Does.Not.Contain("animator.Play"));
+        Assert.That(receiverSource, Does.Not.Contain("ExecuteMoveOffset"));
     }
 
     [Test]

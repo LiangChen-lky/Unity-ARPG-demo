@@ -4,11 +4,6 @@ public enum MoveOffsetDirection
     Up
 }
 
-public enum Weapon
-{
-    Katana,
-}
-
 public enum AttackForce
 {
     Easy,

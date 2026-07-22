@@ -89,6 +89,63 @@ public class CombatArchitectureTests
     }
 
     [Test]
+    public void PlayerAttackDetectionGizmoMatchesOverlapBoxCoordinates()
+    {
+        GameObject ownerObject = new GameObject();
+        ownerObject.transform.SetPositionAndRotation(
+            new Vector3(3f, 1f, -2f),
+            Quaternion.Euler(0f, 90f, 0f));
+        AttackDetectionConfig detectionConfig = new AttackDetectionConfig
+        {
+            Position = new Vector3(2f, 1f, 4f),
+            Rotation = new Vector3(0f, 15f, 0f),
+            Scale = new Vector3(0.65f, 0.9f, 1f)
+        };
+
+        MethodInfo getWorldDetectionBox = typeof(PlayerAttackDetectionGizmo).GetMethod(
+            "GetWorldDetectionBox",
+            BindingFlags.Static | BindingFlags.NonPublic);
+        object[] parameters = { ownerObject.transform, detectionConfig, null, null };
+
+        Assert.That(getWorldDetectionBox, Is.Not.Null);
+        getWorldDetectionBox.Invoke(null, parameters);
+
+        Assert.That((Vector3)parameters[2], Is.EqualTo(new Vector3(7f, 2f, -4f)));
+        Assert.That(
+            Quaternion.Angle((Quaternion)parameters[3], Quaternion.Euler(0f, 105f, 0f)),
+            Is.LessThan(0.001f));
+
+        Object.DestroyImmediate(ownerObject);
+    }
+
+    [Test]
+    public void AttackDetectionGizmoStaysIndependentFromCombatExecutor()
+    {
+        string executorSource = File.ReadAllText(ProjectPath(
+            "Assets/Scrips/Characters/Player/AttackSystem/CombatExecutor.cs"));
+        string gizmoSource = File.ReadAllText(ProjectPath(
+            "Assets/Scrips/Characters/Player/Utilities/Debug/AttackDetection/PlayerAttackDetectionGizmo.cs"));
+
+        Assert.That(executorSource, Does.Not.Contain("AttackDetectionBoxCalculator"));
+        Assert.That(gizmoSource, Does.Not.Contain("CombatExecutor"));
+    }
+
+    [Test]
+    public void AttackDetectionGizmoPreviewsOneConfiguredCombo()
+    {
+        FieldInfo previewComboIndex = typeof(PlayerAttackDetectionGizmo).GetField(
+            "previewComboIndex",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+        string gizmoSource = File.ReadAllText(ProjectPath(
+            "Assets/Scrips/Characters/Player/Utilities/Debug/AttackDetection/PlayerAttackDetectionGizmo.cs"));
+
+        Assert.That(previewComboIndex, Is.Not.Null);
+        Assert.That(previewComboIndex.FieldType, Is.EqualTo(typeof(int)));
+        Assert.That(gizmoSource, Does.Contain("comboConfigs[previewComboIndex]"));
+        Assert.That(gizmoSource, Does.Not.Contain("foreach (ComboConfig comboConfig"));
+    }
+
+    [Test]
     public void TransitionAnimationEventsCarrySourceClip()
     {
         MethodInfo stateTransitionMethod = typeof(IState).GetMethod(
@@ -116,12 +173,20 @@ public class CombatArchitectureTests
         string scene = File.ReadAllText(ProjectPath("Assets/Scenes/SampleScene.unity"));
         string inputMeta = File.ReadAllText(ProjectPath(
             "Assets/Scrips/Characters/Player/Utilities/Input/PlayerInput.cs.meta"));
+        string gizmoMeta = File.ReadAllText(ProjectPath(
+            "Assets/Scrips/Characters/Player/Utilities/Debug/AttackDetection/PlayerAttackDetectionGizmo.cs.meta"));
         Match guidMatch = Regex.Match(inputMeta, @"(?m)^guid:\s*(\w+)\s*$");
+        Match gizmoGuidMatch = Regex.Match(gizmoMeta, @"(?m)^guid:\s*(\w+)\s*$");
 
         Assert.That(guidMatch.Success, Is.True);
+        Assert.That(gizmoGuidMatch.Success, Is.True);
         int inputCount = Regex.Matches(scene, $@"guid:\s*{Regex.Escape(guidMatch.Groups[1].Value)}").Count;
+        int gizmoCount = Regex.Matches(
+            scene,
+            $@"guid:\s*{Regex.Escape(gizmoGuidMatch.Groups[1].Value)}").Count;
 
         Assert.That(inputCount, Is.EqualTo(1));
+        Assert.That(gizmoCount, Is.EqualTo(1));
         Assert.That(scene, Does.Match(@"weaponControllerSource:\s*\{fileID:\s*(?!0\b)\d+\}"));
         Assert.That(scene, Does.Not.Contain("<CurrentComboList>k__BackingField"));
         Assert.That(scene, Does.Not.Contain("<TargetLayer>k__BackingField"));

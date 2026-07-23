@@ -166,6 +166,8 @@ GameObject:
   - component: {fileID: 100654882}
   - component: {fileID: 100654881}
   - component: {fileID: 100654880}
+  - component: {fileID: 100654883}
+  - component: {fileID: 100654884}
   m_Layer: 8
   m_Name: Enemy
   m_TagString: Untagged
@@ -182,14 +184,41 @@ MonoBehaviour:
   m_GameObject: {fileID: 100654879}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 71723d17fd6571546837695ddf0e0afc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Script: {fileID: 11500000, guid: d8bcb8030bc7495d9c3f8e0a1c8ebc55, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
   <HitFXList>k__BackingField:
   - {fileID: 11400000, guid: 4338f2e5cc694d04081fe301ec6cb657, type: 2}
   - {fileID: 11400000, guid: 32c25a595591ab049a351e21946cc753, type: 2}
   - {fileID: 11400000, guid: bda6ccd951f9d814ea2dcfd4c0278b86, type: 2}
   <HitFXPosition>k__BackingField: {fileID: 278826226}
+--- !u!114 &100654883
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100654879}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c649b7f7bc1e4eddb8a4340f5116ae60, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  <Data>k__BackingField: {fileID: 11400000, guid: ef721c51edb34b73b9e26f3b6cb54a0c, type: 2}
+  <Stats>k__BackingField: {fileID: 100654884}
+  <HitReceiver>k__BackingField: {fileID: 100654880}
+--- !u!114 &100654884
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100654879}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3560e8bb59c4c7a8b84b8e0ad55fb5d, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
 --- !u!136 &100654881
 CapsuleCollider:
   m_ObjectHideFlags: 0

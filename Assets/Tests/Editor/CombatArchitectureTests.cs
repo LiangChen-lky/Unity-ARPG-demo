@@ -129,6 +129,65 @@ public class CombatArchitectureTests
     }
 
     [Test]
+    public void EnemyStatsOwnsRuntimeHealth()
+    {
+        GameObject enemyObject = new GameObject();
+        EnemyStats stats = enemyObject.AddComponent<EnemyStats>();
+
+        stats.Initialize(3f);
+        stats.TakeDamage(1f);
+        Assert.That(stats.MaxHealth, Is.EqualTo(3f));
+        Assert.That(stats.CurrentHealth, Is.EqualTo(2f));
+        Assert.That(stats.IsDead, Is.False);
+
+        stats.TakeDamage(2f);
+        stats.TakeDamage(1f);
+        Assert.That(stats.CurrentHealth, Is.EqualTo(0f));
+        Assert.That(stats.IsDead, Is.True);
+
+        Object.DestroyImmediate(enemyObject);
+    }
+
+    [Test]
+    public void EnemyHitReceiverConvertsHitContextDamageToStats()
+    {
+        GameObject enemyObject = new GameObject();
+        EnemyStats stats = enemyObject.AddComponent<EnemyStats>();
+        EnemyHitReceiver hitReceiver = enemyObject.AddComponent<EnemyHitReceiver>();
+        HitContext context = new HitContext(
+            Vector3.zero,
+            Vector3.forward,
+            AttackForce.Easy,
+            1f);
+
+        stats.Initialize(3f);
+        hitReceiver.Initialize(stats);
+        hitReceiver.ReceiveHit(context);
+
+        // 受击组件只转发命中伤害，生命值写入始终由 EnemyStats 负责。
+        Assert.That(stats.CurrentHealth, Is.EqualTo(2f));
+        Assert.That(typeof(IHitReceiver).IsAssignableFrom(typeof(EnemyHitReceiver)), Is.True);
+        Assert.That(typeof(HitReceiverBase).IsAssignableFrom(typeof(EnemyHitReceiver)), Is.True);
+
+        stats.TakeDamage(2f);
+        hitReceiver.ReceiveHit(context);
+        Assert.That(stats.CurrentHealth, Is.EqualTo(0f));
+
+        Object.DestroyImmediate(enemyObject);
+    }
+
+    [Test]
+    public void CombatExecutorDoesNotDependOnConcreteEnemyComponents()
+    {
+        string executorSource = File.ReadAllText(ProjectPath(
+            "Assets/Scrips/Characters/Player/AttackSystem/CombatExecutor.cs"));
+
+        Assert.That(executorSource, Does.Not.Contain("EnemyStats"));
+        Assert.That(executorSource, Does.Not.Contain("EnemyHitReceiver"));
+        Assert.That(executorSource, Does.Not.Contain("GetComponent<Enemy"));
+    }
+
+    [Test]
     public void PlayerAttackDetectionGizmoMatchesOverlapBoxCoordinates()
     {
         GameObject ownerObject = new GameObject();
@@ -233,6 +292,38 @@ public class CombatArchitectureTests
         Assert.That(scene, Does.Match(@"weaponControllerSource:\s*\{fileID:\s*(?!0\b)\d+\}"));
         Assert.That(scene, Does.Not.Contain("<CurrentComboList>k__BackingField"));
         Assert.That(scene, Does.Not.Contain("<TargetLayer>k__BackingField"));
+    }
+
+    [Test]
+    public void SampleSceneUsesEnemyComposition()
+    {
+        string scene = File.ReadAllText(ProjectPath("Assets/Scenes/SampleScene.unity"));
+        string enemyMeta = File.ReadAllText(ProjectPath(
+            "Assets/Scrips/Characters/Enemy/Enemy.cs.meta"));
+        string statsMeta = File.ReadAllText(ProjectPath(
+            "Assets/Scrips/Characters/Enemy/EnemyStats.cs.meta"));
+        string receiverMeta = File.ReadAllText(ProjectPath(
+            "Assets/Scrips/Characters/Enemy/EnemyHitReceiver.cs.meta"));
+        string baseReceiverMeta = File.ReadAllText(ProjectPath(
+            "Assets/Scrips/Characters/Combat/HitReceiverBase.cs.meta"));
+        string enemyAssetMeta = File.ReadAllText(ProjectPath(
+            "Assets/ScriptableObjects/Characters/Enemy/Enemy.asset.meta"));
+        Match enemyGuid = Regex.Match(enemyMeta, @"(?m)^guid:\s*(\w+)\s*$");
+        Match statsGuid = Regex.Match(statsMeta, @"(?m)^guid:\s*(\w+)\s*$");
+        Match receiverGuid = Regex.Match(receiverMeta, @"(?m)^guid:\s*(\w+)\s*$");
+        Match baseReceiverGuid = Regex.Match(baseReceiverMeta, @"(?m)^guid:\s*(\w+)\s*$");
+        Match enemyAssetGuid = Regex.Match(enemyAssetMeta, @"(?m)^guid:\s*(\w+)\s*$");
+
+        Assert.That(enemyGuid.Success, Is.True);
+        Assert.That(statsGuid.Success, Is.True);
+        Assert.That(receiverGuid.Success, Is.True);
+        Assert.That(baseReceiverGuid.Success, Is.True);
+        Assert.That(enemyAssetGuid.Success, Is.True);
+        Assert.That(scene, Does.Contain($"guid: {enemyGuid.Groups[1].Value}"));
+        Assert.That(scene, Does.Contain($"guid: {statsGuid.Groups[1].Value}"));
+        Assert.That(scene, Does.Contain($"guid: {receiverGuid.Groups[1].Value}"));
+        Assert.That(scene, Does.Contain($"guid: {enemyAssetGuid.Groups[1].Value}"));
+        Assert.That(scene, Does.Not.Contain($"guid: {baseReceiverGuid.Groups[1].Value}"));
     }
 
     [Test]

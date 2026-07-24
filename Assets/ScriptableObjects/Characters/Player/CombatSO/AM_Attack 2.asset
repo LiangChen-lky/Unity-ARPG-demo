@@ -13,8 +13,15 @@ MonoBehaviour:
   m_Name: AM_Attack 2
   m_EditorClassIdentifier: 
   ComboName: AM_Attack02
-  InteractionConfig: []
-  AttackDetectionConfig: []
+  AttackClip: {fileID: 7400000, guid: b497e9c8209ad1f45ab943163c26dfcb, type: 2}
+  InteractionConfig:
+  - AttackForce: 0
+    Damage: 1
+  AttackDetectionConfig:
+  - StartFrame: 7
+    Position: {x: 0, y: 0.35, z: 0.7}
+    Rotation: {x: 0, y: 0, z: 0}
+    Scale: {x: 0.55, y: 0.35, z: 0.7}
   AttackFeedbackConfig: []
   FXConfig: []
   SFXConfig: []

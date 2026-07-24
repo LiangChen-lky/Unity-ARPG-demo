@@ -6,6 +6,7 @@ public class ComboConfig : ScriptableObject
 {
     [Header("基础数据")]
     public string ComboName;
+    public AnimationClip AttackClip;
 
     [Header("命中交互数据")]
     public ComboInteractionConfig[] InteractionConfig;
@@ -22,6 +23,11 @@ public class ComboConfig : ScriptableObject
     [Header("音效数据")]
     public SFXConfig[] SFXConfig;
 
+    // 命中配置使用帧号编辑，这里统一换算为 Animator 使用的归一化进度。
+    public float GetAttackDetectionNormalizedTime(AttackDetectionConfig detectionConfig)
+    {
+        return detectionConfig.GetNormalizedStartTime(AttackClip);
+    }
 }
 
 [Serializable]
@@ -35,11 +41,17 @@ public class ComboInteractionConfig
 [Serializable]
 public class AttackDetectionConfig
 {
-    // 触发时间点和碰撞盒信息。
-    public float StartTime;
+    // 从动画的第 1 帧开始计数，避免策划配置时手动换算归一化进度。
+    [Min(1)] public int StartFrame = 1;
     public Vector3 Position;
     public Vector3 Rotation;
     public Vector3 Scale;
+
+    // 以动画实际长度和采样率换算，保证不同帧数的招式都能直接按帧配置。
+    public float GetNormalizedStartTime(AnimationClip attackClip)
+    {
+        return (StartFrame - 1) / (attackClip.length * attackClip.frameRate);
+    }
 }
 
 [Serializable]

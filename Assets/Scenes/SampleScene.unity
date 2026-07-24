@@ -185,40 +185,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d8bcb8030bc7495d9c3f8e0a1c8ebc55, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   <HitFXList>k__BackingField:
   - {fileID: 11400000, guid: 4338f2e5cc694d04081fe301ec6cb657, type: 2}
   - {fileID: 11400000, guid: 32c25a595591ab049a351e21946cc753, type: 2}
   - {fileID: 11400000, guid: bda6ccd951f9d814ea2dcfd4c0278b86, type: 2}
   <HitFXPosition>k__BackingField: {fileID: 278826226}
---- !u!114 &100654883
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 100654879}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c649b7f7bc1e4eddb8a4340f5116ae60, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
-  <Data>k__BackingField: {fileID: 11400000, guid: ef721c51edb34b73b9e26f3b6cb54a0c, type: 2}
-  <Stats>k__BackingField: {fileID: 100654884}
-  <HitReceiver>k__BackingField: {fileID: 100654880}
---- !u!114 &100654884
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 100654879}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a3560e8bb59c4c7a8b84b8e0ad55fb5d, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
 --- !u!136 &100654881
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -259,6 +232,34 @@ Transform:
   - {fileID: 501928262}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &100654883
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100654879}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c649b7f7bc1e4eddb8a4340f5116ae60, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  <Data>k__BackingField: {fileID: 11400000, guid: ef721c51edb34b73b9e26f3b6cb54a0c,
+    type: 2}
+  <Stats>k__BackingField: {fileID: 100654884}
+  <HitReceiver>k__BackingField: {fileID: 100654880}
+--- !u!114 &100654884
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100654879}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3560e8bb59c4c7a8b84b8e0ad55fb5d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!4 &105827498 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -6448435200997479469, guid: f8a70080ed072c5488e9336df5319d2b,
@@ -7290,7 +7291,7 @@ Transform:
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
   m_LocalRotation: {x: 2.980121e-10, y: 0.000000029802326, z: -8.881453e-18, w: 1}
-  m_LocalPosition: {x: 0.68906516, y: 1.2, z: -3}
+  m_LocalPosition: {x: 0.6763916, y: 1.2, z: -3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -9702,10 +9703,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b618d8cdfb4249469447b55cb553a677, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
+  showAttackDetection: 1
   attackDetectionColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  previewComboIndex: 0
+  previewComboIndex: 2
 --- !u!4 &728131425 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3214405113040960797, guid: f8a70080ed072c5488e9336df5319d2b,
@@ -17872,7 +17874,7 @@ Transform:
   m_GameObject: {fileID: 1957819533}
   serializedVersion: 2
   m_LocalRotation: {x: 2.980121e-10, y: 0.000000029802326, z: -1.2766743e-17, w: 1}
-  m_LocalPosition: {x: 0.68906516, y: 1.2, z: -3}
+  m_LocalPosition: {x: 0.6763916, y: 1.2, z: -3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

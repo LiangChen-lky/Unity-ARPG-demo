@@ -44,6 +44,14 @@ public class ComboList : ScriptableObject //招式表
         }
         return ComboConfigs[comboIndex].AttackDetectionConfig[eventIndex];
     }
+
+    // 当前攻击段已经确认存在检测事件后，按该段绑定的动画计算其触发进度。
+    public float GetAttackDetectionNormalizedTime(int comboIndex, int eventIndex)
+    {
+        ComboConfig comboConfig = ComboConfigs[comboIndex];
+        return comboConfig.GetAttackDetectionNormalizedTime(
+            comboConfig.AttackDetectionConfig[eventIndex]);
+    }
     
     public AttackFeedbackConfig TryGetAttackFeedbackConfig(int comboIndex, int eventIndex)
     {

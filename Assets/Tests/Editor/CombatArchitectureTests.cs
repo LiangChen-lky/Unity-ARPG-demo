@@ -129,6 +129,30 @@ public class CombatArchitectureTests
     }
 
     [Test]
+    public void AttackDetectionFrameUsesItsComboClipTiming()
+    {
+        AnimationClip attackClip = new AnimationClip { frameRate = 30f };
+        attackClip.SetCurve(
+            string.Empty,
+            typeof(Transform),
+            "localPosition.x",
+            AnimationCurve.Linear(0f, 0f, 3f, 0f));
+        ComboConfig comboConfig = ScriptableObject.CreateInstance<ComboConfig>();
+        AttackDetectionConfig detectionConfig = new AttackDetectionConfig { StartFrame = 31 };
+
+        comboConfig.AttackClip = attackClip;
+
+        // 第 31 帧对应 30 个帧间隔，30 FPS、3 秒动画的归一化进度应为三分之一。
+        Assert.That(
+            comboConfig.GetAttackDetectionNormalizedTime(detectionConfig),
+            Is.EqualTo(1f / 3f).Within(0.0001f));
+        Assert.That(typeof(AttackDetectionConfig).GetField("StartTime"), Is.Null);
+
+        Object.DestroyImmediate(comboConfig);
+        Object.DestroyImmediate(attackClip);
+    }
+
+    [Test]
     public void EnemyStatsOwnsRuntimeHealth()
     {
         GameObject enemyObject = new GameObject();

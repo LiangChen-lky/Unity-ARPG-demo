@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: AM_Attack 4
   m_EditorClassIdentifier: 
   ComboName: AM_Attack04
+  AttackClip: {fileID: 7400000, guid: b8997365f9630564a9ac8e0a899797c7, type: 2}
   InteractionConfig: []
   AttackDetectionConfig: []
   AttackFeedbackConfig: []

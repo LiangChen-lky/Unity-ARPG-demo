@@ -5,12 +5,18 @@ public class PlayerAttackDetectionGizmo : MonoBehaviour
 {
 #if UNITY_EDITOR
     [Header("Debug")]
+    [SerializeField] private bool showAttackDetection;
     [SerializeField] private Color attackDetectionColor = Color.yellow;
     [SerializeField, Min(0)] private int previewComboIndex;
 
-    // 只在选中玩家时绘制，避免常驻调试线框遮挡场景内容。
-    private void OnDrawGizmosSelected()
+    // 开关开启后常驻绘制，不受当前选中物体影响；关闭后完全停止绘制。
+    private void OnDrawGizmos()
     {
+        if (!showAttackDetection)
+        {
+            return;
+        }
+
         Player player = GetComponent<Player>();
         if (player.Data == null ||
             player.Data.AttackData == null ||

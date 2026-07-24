@@ -64,7 +64,16 @@ public sealed class CombatExecutor
         AttackDetectionConfig detectionConfig =
             comboList.TryGetAttackDetectionConfig(currentComboIndex, attackDetectionEventIndex);
 
-        if (detectionConfig == null || normalizedTime <= detectionConfig.StartTime)
+        if (detectionConfig == null)
+        {
+            return;
+        }
+
+        // 配置以动画帧为准，在执行时换算为 Animator 的归一化进度。
+        float startNormalizedTime = comboList.GetAttackDetectionNormalizedTime(
+            currentComboIndex,
+            attackDetectionEventIndex);
+        if (normalizedTime <= startNormalizedTime)
         {
             return;
         }

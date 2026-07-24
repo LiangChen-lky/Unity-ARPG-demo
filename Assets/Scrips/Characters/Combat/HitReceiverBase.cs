@@ -29,13 +29,21 @@ public class HitReceiverBase : MonoBehaviour, IHitReceiver
     private void PlayHitFX(AttackForce force)
     {
         int hitFXIndex = (int)force;
+        // HitFXList 未配置或力度档位未覆盖属于表现缺失，可以静默跳过这次受击特效。
         if (HitFXList == null || hitFXIndex < 0 || hitFXIndex >= HitFXList.Length)
         {
             return;
         }
 
         HitFXConfig hitFXConfig = HitFXList[hitFXIndex];
-        if (hitFXConfig == null || hitFXConfig.HitFXList == null || hitFXConfig.HitFXList.Length == 0)
+        // 数组槽位存在却为空引用，说明序列化丢了对象，属于配置错误而非表现缺失，必须暴露。
+        if (hitFXConfig == null)
+        {
+            throw new System.InvalidOperationException(
+                $"HitFXList[{hitFXIndex}] 引用为空，请在 Inspector 重新绑定受击特效配置。");
+        }
+        // 子特效列表未配置同样属于表现缺失，可以静默跳过。
+        if (hitFXConfig.HitFXList == null || hitFXConfig.HitFXList.Length == 0)
         {
             return;
         }

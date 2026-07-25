@@ -1,9 +1,38 @@
+using System;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "ComboList", menuName = "ScriptableObject/Combat/ComboList")]
 public class ComboList : ScriptableObject //招式表
 {
     [field: SerializeField] public ComboConfig[] ComboConfigs { get; private set; }
+
+    /// <summary>
+    /// 校验整张连招表，把数据规则的审查留在数据层。
+    /// 校验失败抛出 InvalidOperationException，错误信息包含 ComboList 名称、段号、命中事件号、字段与允许范围。
+    /// </summary>
+    public void ValidateConfiguration()
+    {
+        // 招式表未配置任何段时无法进入攻击，属于开发配置错误。
+        if (ComboConfigs == null || ComboConfigs.Length == 0)
+        {
+            throw new InvalidOperationException(
+                $"ComboList \"{name}\" 未配置任何 ComboConfig，至少需要一段招式。");
+        }
+
+        for (int comboIndex = 0; comboIndex < ComboConfigs.Length; comboIndex++)
+        {
+            ComboConfig comboConfig = ComboConfigs[comboIndex];
+
+            if (comboConfig == null)
+            {
+                throw new InvalidOperationException(
+                    $"ComboList \"{name}\" 第 {comboIndex + 1} 段招式：ComboConfig 引用不能为 null。");
+            }
+
+            // 单段具体校验交给 ComboConfig 自己负责，这里只负责遍历与命名定位。
+            comboConfig.ValidateConfiguration(comboIndex, name);
+        }
+    }
 
     public int TryGetComboConfigsCount()
     {

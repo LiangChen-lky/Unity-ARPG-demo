@@ -110,25 +110,24 @@ public class PlayerAttackState : PlayerGroundedState
     /// <summary>
     /// 校验攻击状态的必要配置。
     /// 缺少连击数据属于开发配置错误，不能被当作一次正常的攻击结束处理。
+    /// 具体单段字段校验由 ComboList/ComboConfig 在数据层完成，这里只负责进入攻击前的总闸。
     /// </summary>
     public void ValidateConfiguration()
     {
-        if (combatExecutor.HasComboData)
+        // 攻击状态只确认自身是否绑定了连招表；连招表内部的完整性由数据层继续校验。
+        ComboList comboList = attackData.CurrentComboList;
+        if (comboList == null)
         {
-            return;
+            throw new InvalidOperationException(
+                "PlayerAttackState requires a configured ComboList.");
         }
 
-        throw new InvalidOperationException(
-            "PlayerAttackState requires a valid ComboList with at least one ComboConfig.");
+        // 深层字段校验抛出 InvalidOperationException 时直接冒泡，让配置错误在开发期暴露。
+        comboList.ValidateConfiguration();
     }
 
     private void RunCombatEvents()
     {
-        if (!combatExecutor.HasComboData)
-        {
-            return;
-        }
-
         // CombatExecutor 使用动画归一化时间判断命中框、特效等事件的触发时机。
         AnimatorStateInfo animatorStateInfo = stateMachine.Player.Animator.GetCurrentAnimatorStateInfo(0);
         combatExecutor.Update(animatorStateInfo.normalizedTime);

@@ -22,12 +22,6 @@ public sealed class CombatExecutor
         this.effectSpawner = effectSpawner ?? new CombatEffectSpawner();
     }
 
-    public bool HasComboData =>
-        attackData != null &&
-        attackData.CurrentComboList != null &&
-        attackData.CurrentComboList.ComboConfigs != null &&
-        attackData.CurrentComboList.ComboConfigs.Length > 0;
-
     public void BeginAttack()
     {
         ResetEventIndexes();
@@ -49,11 +43,6 @@ public sealed class CombatExecutor
 
     public void Update(float normalizedTime)
     {
-        if (!HasComboData)
-        {
-            return;
-        }
-
         RunAttackDetectionEvent(normalizedTime);
         RunFXEvent(normalizedTime);
     }
@@ -61,32 +50,38 @@ public sealed class CombatExecutor
     private void RunAttackDetectionEvent(float normalizedTime)
     {
         ComboList comboList = attackData.CurrentComboList;
-        AttackDetectionConfig detectionConfig =
-            comboList.TryGetAttackDetectionConfig(currentComboIndex, attackDetectionEventIndex);
 
-        if (detectionConfig == null)
+        // 同一游戏帧可能跨过多个命中帧，也允许同一动画帧配置多个碰撞盒。
+        // 循环消费全部到时事件，确保它们都在本次 Update 中完成检测。
+        while (true)
         {
-            return;
-        }
+            AttackDetectionConfig detectionConfig =
+                comboList.TryGetAttackDetectionConfig(currentComboIndex, attackDetectionEventIndex);
 
-        // 配置以动画帧为准，在执行时换算为 Animator 的归一化进度。
-        float startNormalizedTime = comboList.GetAttackDetectionNormalizedTime(
-            currentComboIndex,
-            attackDetectionEventIndex);
-        if (normalizedTime <= startNormalizedTime)
-        {
-            return;
-        }
+            // 走完本段所有命中事件后正常返回，这是事件遍历的自然结束，不是配置错误。
+            if (detectionConfig == null)
+            {
+                return;
+            }
 
-        ComboInteractionConfig interactionConfig =
-            comboList.TryGetComboInteractionConfig(currentComboIndex, attackDetectionEventIndex);
+            // 配置以动画帧为准，在执行时换算为 Animator 的归一化进度。
+            float startNormalizedTime = comboList.GetAttackDetectionNormalizedTime(
+                currentComboIndex,
+                attackDetectionEventIndex);
+            if (normalizedTime <= startNormalizedTime)
+            {
+                return;
+            }
 
-        if (interactionConfig != null)
-        {
+            // 检测数据存在即说明对应索引的交互数据也通过校验，直接按同索引取得并执行。
+            // 缺失数据应由 PlayerAttackState 进入攻击前的前置校验拦截，而不是在这里静默失效。
+            ComboInteractionConfig interactionConfig =
+                comboList.TryGetComboInteractionConfig(currentComboIndex, attackDetectionEventIndex);
+
             DispatchHits(detectionConfig, interactionConfig);
-        }
 
-        attackDetectionEventIndex++;
+            attackDetectionEventIndex++;
+        }
     }
 
     private void DispatchHits(

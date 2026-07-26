@@ -34,33 +34,21 @@ public class ComboList : ScriptableObject //招式表
         }
     }
 
-    public int TryGetComboConfigsCount()
+    // 数量不存在"取不到"的正常情况，直接暴露只读属性。
+    public int ComboCount => ComboConfigs.Length;
+
+    // 当前段已由 ValidateConfiguration 保证存在，直接按索引读取，越界应暴露为错误。
+    public string GetComboName(int comboIndex)
     {
-        return ComboConfigs.Length;
-    }
-    
-    public string TryGetComboName(int comboIndex)
-    {
-        if (comboIndex < 0 || comboIndex >= ComboConfigs.Length)
-        {
-            return null;
-        }
         return ComboConfigs[comboIndex].ComboName;
     }
-    
-    public ComboInteractionConfig TryGetComboInteractionConfig(int comboIndex, int eventIndex)
+
+    // 命中盒与交互配置一一对应且已校验；缺失应直接暴露，而非静默不造成伤害。
+    public ComboInteractionConfig GetComboInteractionConfig(int comboIndex, int eventIndex)
     {
-        if (comboIndex < 0 || comboIndex >= ComboConfigs.Length)
-        {
-            return null;
-        }
-        if (eventIndex < 0 || eventIndex >= ComboConfigs[comboIndex].InteractionConfig.Length)
-        {
-            return null;
-        }
         return ComboConfigs[comboIndex].InteractionConfig[eventIndex];
     }
-    
+
     public AttackDetectionConfig TryGetAttackDetectionConfig(int comboIndex, int eventIndex)
     {
         if (comboIndex < 0 || comboIndex >= ComboConfigs.Length)

@@ -872,6 +872,22 @@ public class CombatArchitectureTests
         Assert.That(fxMethodSource, Does.Contain("fxEventIndex++"));
     }
 
+    [Test]
+    public void ComboListRuntimeAccessorsDropRedundantTryFallbacks()
+    {
+        // 已校验数据的直接读取不再暴露静默兜底接口，缺失应暴露为错误而非静默失效。
+        Assert.That(typeof(ComboList).GetMethod("TryGetComboName"), Is.Null);
+        Assert.That(typeof(ComboList).GetMethod("TryGetComboInteractionConfig"), Is.Null);
+        Assert.That(typeof(ComboList).GetMethod("TryGetComboConfigsCount"), Is.Null);
+        Assert.That(typeof(ComboList).GetMethod("GetComboName"), Is.Not.Null);
+        Assert.That(typeof(ComboList).GetMethod("GetComboInteractionConfig"), Is.Not.Null);
+        Assert.That(typeof(ComboList).GetProperty("ComboCount"), Is.Not.Null);
+
+        // 事件游标走到数组末尾返回 null 是正常结束信号，这些遍历接口必须保留。
+        Assert.That(typeof(ComboList).GetMethod("TryGetAttackDetectionConfig"), Is.Not.Null);
+        Assert.That(typeof(ComboList).GetMethod("TryGetFXConfig"), Is.Not.Null);
+    }
+
     // 构造一份完全合法的两事件 ComboList，供各失败用例按需破坏单项字段。
     private static ComboList BuildValidComboList(string listName)
     {

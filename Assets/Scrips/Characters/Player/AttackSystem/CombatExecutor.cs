@@ -77,7 +77,7 @@ public sealed class CombatExecutor
             // 检测数据存在即说明对应索引的交互数据也通过校验，直接按同索引取得并执行。
             // 缺失数据应由 PlayerAttackState 进入攻击前的前置校验拦截，而不是在这里静默失效。
             ComboInteractionConfig interactionConfig =
-                comboList.TryGetComboInteractionConfig(currentComboIndex, attackDetectionEventIndex);
+                comboList.GetComboInteractionConfig(currentComboIndex, attackDetectionEventIndex);
 
             DispatchHits(detectionConfig, interactionConfig);
 

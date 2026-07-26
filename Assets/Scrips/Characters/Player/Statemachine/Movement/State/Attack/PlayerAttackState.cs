@@ -100,8 +100,9 @@ public class PlayerAttackState : PlayerGroundedState
         }
 
         AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
-        string currentComboName = attackData.CurrentComboList.TryGetComboName(currentComboIndex);
-        if (string.IsNullOrEmpty(currentComboName) || !stateInfo.IsName(currentComboName))
+        // 保留状态名比对：这是 CrossFade 期间的时序守卫，不是防御性配置校验。
+        string currentComboName = attackData.CurrentComboList.GetComboName(currentComboIndex);
+        if (!stateInfo.IsName(currentComboName))
         {
             normalizedTime = 0f;
             return false;
@@ -117,7 +118,7 @@ public class PlayerAttackState : PlayerGroundedState
         combatExecutor.BeginCombo(currentComboIndex);
 
         stateMachine.Player.Animator.CrossFadeInFixedTime(
-            attackData.CurrentComboList.TryGetComboName(currentComboIndex),
+            attackData.CurrentComboList.GetComboName(currentComboIndex),
             ComboTransitionDuration,
             0,
             0);
@@ -154,7 +155,7 @@ public class PlayerAttackState : PlayerGroundedState
 
     protected override void OnAttackStarted(InputAction.CallbackContext context)
     {
-        int comboCount = attackData.CurrentComboList.TryGetComboConfigsCount();
+        int comboCount = attackData.CurrentComboList.ComboCount;
         if (currentComboIndex >= comboCount - 1 ||
             !TryGetCurrentComboNormalizedTime(out float normalizedTime))
         {

@@ -87,6 +87,20 @@ public class PlayerAttackState : PlayerGroundedState
         }
 
         comboList.ValidateConfiguration();
+
+        // 数据层校验通过后，再确认每段 ComboName 对应的 Animator 状态确实存在。
+        // 缺失属于配置错误，必须在 Enter 阶段直接失败，运行中不做超时或回退 Idle 等兜底。
+        Animator animator = stateMachine.Player.Animator;
+        for (int comboIndex = 0; comboIndex < comboList.ComboCount; comboIndex++)
+        {
+            string statePath = comboList.GetComboName(comboIndex);
+            if (!animator.HasState(0, Animator.StringToHash(statePath)))
+            {
+                throw new InvalidOperationException(
+                    $"PlayerAttackState 第 {comboIndex + 1} 段招式的 ComboName（{statePath}）" +
+                    "在 Animator 第 0 层不存在，请确认配置的是完整状态路径（如 Base Layer.Attack.AM_Attack01）。");
+            }
+        }
     }
 
     // 过渡期间 GetCurrentAnimatorStateInfo 仍可能指向旧段，不能把旧进度用于新段事件。

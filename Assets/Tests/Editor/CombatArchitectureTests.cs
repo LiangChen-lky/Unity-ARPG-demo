@@ -888,6 +888,57 @@ public class CombatArchitectureTests
         Assert.That(typeof(ComboList).GetMethod("TryGetFXConfig"), Is.Not.Null);
     }
 
+    [Test]
+    public void AttackStateValidatesAnimatorStatePathsAfterDataLayerValidation()
+    {
+        string attackStateSource = File.ReadAllText(ProjectPath(
+            "Assets/Scrips/Characters/Player/Statemachine/Movement/State/Attack/PlayerAttackState.cs"));
+
+        // 先跑数据层校验，再用 Animator.HasState 确认状态路径存在，二者顺序不能颠倒。
+        int dataValidationIndex = attackStateSource.IndexOf("comboList.ValidateConfiguration()");
+        int hasStateIndex = attackStateSource.IndexOf("animator.HasState(0, Animator.StringToHash");
+
+        Assert.That(dataValidationIndex, Is.GreaterThanOrEqualTo(0));
+        Assert.That(hasStateIndex, Is.GreaterThan(dataValidationIndex));
+    }
+
+    [Test]
+    public void ConfiguredComboPathsExistInPlayerAnimatorController()
+    {
+        RuntimeAnimatorController controller = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(
+            "Assets/Animations/Characters/Player/PlayerAnimatorController.controller");
+        ComboList comboList = AssetDatabase.LoadAssetAtPath<ComboList>(
+            "Assets/ScriptableObjects/Characters/Player/CombatSO/AM_ComboList.asset");
+        Assert.That(controller, Is.Not.Null);
+        Assert.That(comboList, Is.Not.Null);
+
+        GameObject animatorOwner = new GameObject("ComboPathValidationAnimator");
+        Animator animator = animatorOwner.AddComponent<Animator>();
+        animator.runtimeAnimatorController = controller;
+
+        try
+        {
+            // 实际连招表配置的每段完整路径都必须在 Animator 第 0 层存在。
+            for (int comboIndex = 0; comboIndex < comboList.ComboCount; comboIndex++)
+            {
+                string statePath = comboList.GetComboName(comboIndex);
+                Assert.That(
+                    animator.HasState(0, Animator.StringToHash(statePath)),
+                    Is.True,
+                    statePath);
+            }
+
+            // 拼错的路径必须判定为不存在，确认校验场景真的能发现配置错误。
+            Assert.That(
+                animator.HasState(0, Animator.StringToHash("Base Layer.Attack.AM_Attack99")),
+                Is.False);
+        }
+        finally
+        {
+            Object.DestroyImmediate(animatorOwner);
+        }
+    }
+
     // 构造一份完全合法的两事件 ComboList，供各失败用例按需破坏单项字段。
     private static ComboList BuildValidComboList(string listName)
     {

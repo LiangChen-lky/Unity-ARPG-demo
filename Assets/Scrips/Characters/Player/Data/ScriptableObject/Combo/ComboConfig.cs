@@ -5,6 +5,8 @@ using UnityEngine;
 public class ComboConfig : ScriptableObject
 {
     [Header("基础数据")]
+    // Animator 第 0 层的完整状态路径（如 Base Layer.Attack.AM_Attack01），不是动画 Clip 名。
+    // CrossFadeInFixedTime、AnimatorStateInfo.IsName 与进入攻击前的 Animator.HasState 校验都依赖它。
     public string ComboName;
     public AnimationClip AttackClip;
 

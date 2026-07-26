@@ -859,6 +859,19 @@ public class CombatArchitectureTests
         Assert.That(comboListSource, Does.Not.Contain("ValidateRecoveryStart"));
     }
 
+    [Test]
+    public void CombatExecutorConsumesAllDueFXEventsInOneUpdate()
+    {
+        string executorSource = File.ReadAllText(ProjectPath(
+            "Assets/Scrips/Characters/Player/AttackSystem/CombatExecutor.cs"));
+        int fxMethodStart = executorSource.IndexOf("private void RunFXEvent");
+        int resetIndexesStart = executorSource.IndexOf("private void ResetEventIndexes");
+        string fxMethodSource = executorSource.Substring(fxMethodStart, resetIndexesStart - fxMethodStart);
+
+        Assert.That(fxMethodSource, Does.Contain("while (true)"));
+        Assert.That(fxMethodSource, Does.Contain("fxEventIndex++"));
+    }
+
     // 构造一份完全合法的两事件 ComboList，供各失败用例按需破坏单项字段。
     private static ComboList BuildValidComboList(string listName)
     {

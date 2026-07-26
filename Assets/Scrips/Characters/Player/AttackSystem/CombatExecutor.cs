@@ -132,19 +132,26 @@ public sealed class CombatExecutor
 
     private void RunFXEvent(float normalizedTime)
     {
-        FXConfig fxConfig = attackData.CurrentComboList.TryGetFXConfig(currentComboIndex, fxEventIndex);
-        if (fxConfig == null || normalizedTime <= fxConfig.StartTime)
+        // 从下一条未执行的特效开始消费；同一帧跨过多个时机时必须全部补齐，
+        // 避免后续状态切换重置游标后遗漏已到时的攻击特效。
+        while (true)
         {
-            return;
+            FXConfig fxConfig = attackData.CurrentComboList.TryGetFXConfig(
+                currentComboIndex,
+                fxEventIndex);
+            if (fxConfig == null || normalizedTime <= fxConfig.StartTime)
+            {
+                return;
+            }
+
+            effectSpawner.SpawnOneShot(
+                fxConfig.FXObject,
+                fxConfig.Position + owner.position,
+                fxConfig.Rotation + owner.eulerAngles,
+                fxConfig.Scale);
+
+            fxEventIndex++;
         }
-
-        effectSpawner.SpawnOneShot(
-            fxConfig.FXObject,
-            fxConfig.Position + owner.position,
-            fxConfig.Rotation + owner.eulerAngles,
-            fxConfig.Scale);
-
-        fxEventIndex++;
     }
 
     private void ResetEventIndexes()

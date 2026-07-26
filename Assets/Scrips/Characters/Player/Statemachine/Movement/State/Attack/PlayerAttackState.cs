@@ -11,6 +11,9 @@ public class PlayerAttackState : PlayerGroundedState
     private readonly PlayerAttackData attackData;
     private readonly CombatExecutor combatExecutor;
 
+    // 连击段切换使用固定秒数过渡，避免散落的匿名数值难以追溯。
+    private const float ComboTransitionDuration = 0.1555f;
+
     // 当前正在播放的线性连招段；下一段固定为数组中的后一项。
     private int currentComboIndex;
 
@@ -115,7 +118,7 @@ public class PlayerAttackState : PlayerGroundedState
 
         stateMachine.Player.Animator.CrossFadeInFixedTime(
             attackData.CurrentComboList.TryGetComboName(currentComboIndex),
-            0.1555f,
+            ComboTransitionDuration,
             0,
             0);
     }

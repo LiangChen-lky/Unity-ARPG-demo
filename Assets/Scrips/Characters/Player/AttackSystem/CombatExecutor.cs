@@ -68,7 +68,8 @@ public sealed class CombatExecutor
             float startNormalizedTime = comboList.GetAttackDetectionNormalizedTime(
                 currentComboIndex,
                 attackDetectionEventIndex);
-            if (normalizedTime <= startNormalizedTime)
+            // 动画进度到达配置帧即执行，不要求超过该帧；跨帧补执行由外层 while 兜底。
+            if (normalizedTime < startNormalizedTime)
             {
                 return;
             }
@@ -139,7 +140,8 @@ public sealed class CombatExecutor
             FXConfig fxConfig = attackData.CurrentComboList.TryGetFXConfig(
                 currentComboIndex,
                 fxEventIndex);
-            if (fxConfig == null || normalizedTime <= fxConfig.StartTime)
+            // 与命中判定保持一致：到达配置时刻即触发特效，而非必须超过。
+            if (fxConfig == null || normalizedTime < fxConfig.StartTime)
             {
                 return;
             }

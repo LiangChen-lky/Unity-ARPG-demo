@@ -33,9 +33,9 @@ public class PlayerRollingState : PlayerLandingState
         RotateTowardTargetRotation();
     }
 
-    public override void OnAnimationTransitionEvent(AnimationEvent animationEvent)
+    public override void OnAnimationTransitionEvent()
     {
-        base.OnAnimationTransitionEvent(animationEvent);
+        base.OnAnimationTransitionEvent();
 
         if (stateMachine.ReusableData.MovementInput == Vector2.zero)
         {

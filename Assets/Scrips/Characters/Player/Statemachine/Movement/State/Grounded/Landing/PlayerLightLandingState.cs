@@ -43,7 +43,7 @@ public class PlayerLightLandingState : PlayerLandingState
         ResetVelocity();
     }
 
-    public override void OnAnimationTransitionEvent(AnimationEvent animationEvent)
+    public override void OnAnimationTransitionEvent()
     {
         stateMachine.ChangeState(stateMachine.IdlingState);
     }

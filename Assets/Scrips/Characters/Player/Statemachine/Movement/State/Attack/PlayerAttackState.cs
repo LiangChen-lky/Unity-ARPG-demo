@@ -3,23 +3,16 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 /// <summary>
-/// 玩家攻击状态，负责串联攻击动画、连击输入和攻击生命周期。
-/// 世界交互与命中检测由 CombatExecutor 负责，状态本身只负责时序和状态转换。
+/// 玩家攻击状态：按当前攻击动画进度统一驱动命中、线性连击、冲刺取消与攻击结束。
+/// 世界命中检测仍由 CombatExecutor 负责，状态本身不操作目标或受击表现。
 /// </summary>
 public class PlayerAttackState : PlayerGroundedState
 {
-    // 攻击状态配置，包含当前使用的连击表和目标层级。
     private readonly PlayerAttackData attackData;
-
-    // 攻击执行器，负责命中检测、特效和攻击事件的执行。
     private readonly CombatExecutor combatExecutor;
 
-    // 当前是否已经进入本段攻击的连击输入窗口。
-    private bool canExecuteCombo;
-
-    // 当前正在播放的连击索引，以及下一次连击要使用的索引。
+    // 当前正在播放的线性连招段；下一段固定为数组中的后一项。
     private int currentComboIndex;
-    private int nextComboIndex;
 
     public PlayerAttackState(PlayerMovementStateMachine stateMachine) : base(stateMachine)
     {
@@ -31,36 +24,23 @@ public class PlayerAttackState : PlayerGroundedState
 
     public override void Enter()
     {
-        // 在注册输入、改变速度和驱动武器之前失败，避免攻击状态只完成了一半初始化。
+        // 配置错误必须在注册输入和启动攻击表现前暴露，避免留下半初始化攻击状态。
         ValidateConfiguration();
         base.Enter();
 
-        // 攻击期间暂时停止移动，并清除进入攻击前残留的刚体速度。
         stateMachine.ReusableData.MovementSpeedModifier = 0f;
         ResetVelocity();
 
-        // 玩家状态进入攻击后，只向武器发送表现指令；命中检测仍由 CombatExecutor 执行。
         stateMachine.Player.WeaponController?.StartAttack();
         combatExecutor.BeginAttack();
-
-        // 首次进入攻击状态时，从连击序列的当前起点开始执行。
-        canExecuteCombo = false;
-
-        ExecuteCombo();
+        ExecuteCombo(0);
     }
 
     public override void Exit()
     {
-        // 无论攻击自然结束还是被其他状态打断，都要清理所有攻击运行时数据。
-        canExecuteCombo = false;
         currentComboIndex = 0;
-        nextComboIndex = 0;
-
         combatExecutor.EndAttack();
-
-        // 无论攻击自然结束还是被其他状态打断，都要让武器回到收刀表现。
         stateMachine.Player.WeaponController?.CancelAttack();
-
         base.Exit();
     }
 
@@ -68,39 +48,23 @@ public class PlayerAttackState : PlayerGroundedState
     {
         base.Update();
 
-        // 使用当前攻击动画的 normalizedTime 驱动 CombatExecutor 中配置的攻击事件。
-        RunCombatEvents();
-    }
-
-    public override void OnAnimationExitEnvent(AnimationEvent animationEvent)
-    {
-        AnimationClip sourceClip = animationEvent?.animatorClipInfo.clip;
-        string currentComboName = attackData.CurrentComboList.TryGetComboName(currentComboIndex);
-
-        // CrossFade 期间，旧 Combo 的 Exit 事件仍可能触发，不能用它结束新 Combo。
-        if (sourceClip == null || sourceClip.name != currentComboName)
+        if (!TryGetCurrentComboNormalizedTime(out float normalizedTime))
         {
             return;
         }
 
-        // 只有当前连击动画的退出事件才能结束攻击状态。
-        HandleAttackFinished();
-    }
+        // 仅确认当前 Animator 已切到本段后，才允许执行本段命中和攻击 FX。
+        combatExecutor.Update(normalizedTime);
 
-    public override void OnAnimationTransitionEvent(AnimationEvent animationEvent)
-    {
-        // 获取当前连击动画名称，用于过滤 CrossFade 期间来自旧 Combo 的 Transition 事件。
-        string currentComboName = attackData.CurrentComboList.TryGetComboName(currentComboIndex);
-
-        AnimationClip sourceClip = animationEvent.animatorClipInfo.clip;
-        if (sourceClip.name != currentComboName)
+        if (TryCancelToMovement(normalizedTime))
         {
-            // CrossFade 期间旧 Combo 的事件仍可能触发，不能打开当前 Combo 的输入窗口。
             return;
         }
 
-        // 当前攻击动画进入后摇衔接区后，开放下一段连击输入。
-        canExecuteCombo = true;
+        if (normalizedTime >= 1f)
+        {
+            HandleAttackFinished();
+        }
     }
 
     #endregion
@@ -108,13 +72,10 @@ public class PlayerAttackState : PlayerGroundedState
     #region Main Methods
 
     /// <summary>
-    /// 校验攻击状态的必要配置。
-    /// 缺少连击数据属于开发配置错误，不能被当作一次正常的攻击结束处理。
-    /// 具体单段字段校验由 ComboList/ComboConfig 在数据层完成，这里只负责进入攻击前的总闸。
+    /// 校验攻击状态的必要配置。具体招式字段由 ComboList 与 ComboConfig 在数据层校验。
     /// </summary>
     public void ValidateConfiguration()
     {
-        // 攻击状态只确认自身是否绑定了连招表；连招表内部的完整性由数据层继续校验。
         ComboList comboList = attackData.CurrentComboList;
         if (comboList == null)
         {
@@ -122,53 +83,66 @@ public class PlayerAttackState : PlayerGroundedState
                 "PlayerAttackState requires a configured ComboList.");
         }
 
-        // 深层字段校验抛出 InvalidOperationException 时直接冒泡，让配置错误在开发期暴露。
         comboList.ValidateConfiguration();
     }
 
-    private void RunCombatEvents()
+    // 过渡期间 GetCurrentAnimatorStateInfo 仍可能指向旧段，不能把旧进度用于新段事件。
+    private bool TryGetCurrentComboNormalizedTime(out float normalizedTime)
     {
-        // CombatExecutor 使用动画归一化时间判断命中框、特效等事件的触发时机。
-        AnimatorStateInfo animatorStateInfo = stateMachine.Player.Animator.GetCurrentAnimatorStateInfo(0);
-        combatExecutor.Update(animatorStateInfo.normalizedTime);
+        Animator animator = stateMachine.Player.Animator;
+        if (animator.IsInTransition(0))
+        {
+            normalizedTime = 0f;
+            return false;
+        }
+
+        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+        string currentComboName = attackData.CurrentComboList.TryGetComboName(currentComboIndex);
+        if (string.IsNullOrEmpty(currentComboName) || !stateInfo.IsName(currentComboName))
+        {
+            normalizedTime = 0f;
+            return false;
+        }
+
+        normalizedTime = stateInfo.normalizedTime;
+        return true;
     }
 
-    /// <summary>
-    /// 播放指定连击动画，并等待该动画事件开放下一段连击。
-    /// </summary>
-    private void ExecuteCombo()
+    private void ExecuteCombo(int comboIndex)
     {
-        // 将待执行索引提交为当前连击，并让执行器重置本段攻击的事件游标。
-        currentComboIndex = nextComboIndex;
+        currentComboIndex = comboIndex;
         combatExecutor.BeginCombo(currentComboIndex);
 
-        // 状态机负责动画表现，CombatExecutor 不直接操作 Animator。
         stateMachine.Player.Animator.CrossFadeInFixedTime(
             attackData.CurrentComboList.TryGetComboName(currentComboIndex),
             0.1555f,
             0,
             0);
-
-        UpdateComboIndex();
-
-        // 播放新一段动画后，必须等待该动画自己的 Transition 事件。
-        canExecuteCombo = false;
-    }
-
-    private void UpdateComboIndex()
-    {
-        // 预先推进下一段索引；达到连击表末尾后回到第一段。
-        nextComboIndex++;
-        if (nextComboIndex >= attackData.CurrentComboList.TryGetComboConfigsCount())
-        {
-            nextComboIndex = 0;
-        }
     }
 
     private void HandleAttackFinished()
     {
-        // 攻击动画退出事件是攻击状态结束的唯一入口。
-        stateMachine.ChangeState(stateMachine.AttackRecoveryState);
+        // 后摇由动画本身承担；动画结束后直接根据当前移动输入回到地面移动状态。
+        if (stateMachine.ReusableData.MovementInput == Vector2.zero)
+        {
+            stateMachine.ChangeState(stateMachine.IdlingState);
+            return;
+        }
+
+        OnMove();
+    }
+
+    // 后摇开始后，持续按住或新按下移动都可立即离开攻击，避免无效帧锁住角色。
+    private bool TryCancelToMovement(float normalizedTime)
+    {
+        float recoveryStart = attackData.CurrentComboList.GetRecoveryStartNormalizedTime(currentComboIndex);
+        if (normalizedTime < recoveryStart || stateMachine.ReusableData.MovementInput == Vector2.zero)
+        {
+            return false;
+        }
+
+        OnMove();
+        return true;
     }
 
     #endregion
@@ -177,11 +151,41 @@ public class PlayerAttackState : PlayerGroundedState
 
     protected override void OnAttackStarted(InputAction.CallbackContext context)
     {
-        // 只有动画 Transition 事件开放窗口后，攻击输入才会推进到下一段连击。
-        if (canExecuteCombo)
+        int comboCount = attackData.CurrentComboList.TryGetComboConfigsCount();
+        if (currentComboIndex >= comboCount - 1 ||
+            !TryGetCurrentComboNormalizedTime(out float normalizedTime))
         {
-            ExecuteCombo();
+            return;
         }
+
+        // 本轮不缓存输入：只有进入后摇起始帧后按下攻击，才立刻衔接下一段。
+        float chainStart = attackData.CurrentComboList.GetRecoveryStartNormalizedTime(currentComboIndex);
+        if (normalizedTime >= chainStart)
+        {
+            ExecuteCombo(currentComboIndex + 1);
+        }
+    }
+
+    protected override void OnDashStarted(InputAction.CallbackContext context)
+    {
+        if (!TryGetCurrentComboNormalizedTime(out float normalizedTime))
+        {
+            return;
+        }
+
+        ComboConfig comboConfig = attackData.CurrentComboList.ComboConfigs[currentComboIndex];
+        float recoveryStart = attackData.CurrentComboList.GetRecoveryStartNormalizedTime(currentComboIndex);
+        if (!comboConfig.CanDashCancel || normalizedTime < recoveryStart)
+        {
+            return;
+        }
+
+        stateMachine.ChangeState(stateMachine.DashingState);
+    }
+
+    protected override void OnJumpStarted(InputAction.CallbackContext context)
+    {
+        // 本轮不实现跳跃取消，攻击期间显式拦截跳跃输入。
     }
 
     #endregion

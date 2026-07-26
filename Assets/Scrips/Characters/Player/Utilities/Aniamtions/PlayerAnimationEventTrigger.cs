@@ -14,15 +14,14 @@ public class PlayerAnimationEventTrigger : MonoBehaviour
         player.OnMovementStateAnimationEnterEvent();
     }
     
-    public void TriggerOnMovementStateAnimationExitEvent(AnimationEvent animationEvent)
+    public void TriggerOnMovementStateAnimationExitEvent()
     {
-        player.OnMovementStateAnimationExitEvent(animationEvent);
+        player.OnMovementStateAnimationExitEvent();
     }
     
-    public void TriggerOnMovementStateAnimationTransitionEvent(AnimationEvent animationEvent)
+    public void TriggerOnMovementStateAnimationTransitionEvent()
     {
-        // 将 AnimationEvent 原样转发，供攻击状态识别事件来自哪个动画 Clip。
-        player.OnMovementStateAnimationTransitionEvent(animationEvent);
+        player.OnMovementStateAnimationTransitionEvent();
     }
 
     private bool IsInAnimationTransition(int layerIndex = 0)

@@ -81,7 +81,12 @@ public class ComboList : ScriptableObject //招式表
         return comboConfig.GetAttackDetectionNormalizedTime(
             comboConfig.AttackDetectionConfig[eventIndex]);
     }
-    
+
+    public float GetRecoveryStartNormalizedTime(int comboIndex)
+    {
+        return ComboConfigs[comboIndex].GetRecoveryStartNormalizedTime();
+    }
+
     public AttackFeedbackConfig TryGetAttackFeedbackConfig(int comboIndex, int eventIndex)
     {
         if (comboIndex < 0 || comboIndex >= ComboConfigs.Length)

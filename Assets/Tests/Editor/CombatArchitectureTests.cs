@@ -273,25 +273,24 @@ public class CombatArchitectureTests
     }
 
     [Test]
-    public void TransitionAnimationEventsCarrySourceClip()
+    public void TransitionAndExitAnimationEventsDoNotCarryUnusedEventObjects()
     {
         MethodInfo stateTransitionMethod = typeof(IState).GetMethod(
             nameof(IState.OnAnimationTransitionEvent));
         MethodInfo triggerTransitionMethod = typeof(PlayerAnimationEventTrigger).GetMethod(
             nameof(PlayerAnimationEventTrigger.TriggerOnMovementStateAnimationTransitionEvent));
+        MethodInfo stateExitMethod = typeof(IState).GetMethod(nameof(IState.OnAnimationExitEnvent));
+        MethodInfo triggerExitMethod = typeof(PlayerAnimationEventTrigger).GetMethod(
+            nameof(PlayerAnimationEventTrigger.TriggerOnMovementStateAnimationExitEvent));
 
         Assert.That(stateTransitionMethod, Is.Not.Null);
         Assert.That(triggerTransitionMethod, Is.Not.Null);
-        Assert.That(stateTransitionMethod.GetParameters(), Has.Length.EqualTo(1));
-        Assert.That(triggerTransitionMethod.GetParameters(), Has.Length.EqualTo(1));
-        Assert.That(stateTransitionMethod.GetParameters()[0].ParameterType, Is.EqualTo(typeof(AnimationEvent)));
-        Assert.That(triggerTransitionMethod.GetParameters()[0].ParameterType, Is.EqualTo(typeof(AnimationEvent)));
-
-        string attackStateSource = File.ReadAllText(ProjectPath(
-            "Assets/Scrips/Characters/Player/Statemachine/Movement/State/Attack/PlayerAttackState.cs"));
-
-        Assert.That(attackStateSource, Does.Contain("animationEvent.animatorClipInfo.clip"));
-        Assert.That(attackStateSource, Does.Contain("sourceClip.name != currentComboName"));
+        Assert.That(stateExitMethod, Is.Not.Null);
+        Assert.That(triggerExitMethod, Is.Not.Null);
+        Assert.That(stateTransitionMethod.GetParameters(), Is.Empty);
+        Assert.That(triggerTransitionMethod.GetParameters(), Is.Empty);
+        Assert.That(stateExitMethod.GetParameters(), Is.Empty);
+        Assert.That(triggerExitMethod.GetParameters(), Is.Empty);
     }
 
     [Test]
@@ -720,9 +719,9 @@ public class CombatArchitectureTests
     }
 
     [Test]
-    public void AMComboListAssetPassesValidation()
+    public void AMComboListAssetPassesRecoveryFrameConfiguration()
     {
-        // 当前 ComboList 引用的全部资产都必须通过校验，防止线上配置悄悄退化为非法状态。
+        // 后摇起始帧由原 Transition 事件换算后写入全部五段资产，整份实际连招表必须通过校验。
         ComboList comboList = AssetDatabase.LoadAssetAtPath<ComboList>(
             "Assets/ScriptableObjects/Characters/Player/CombatSO/AM_ComboList.asset");
         Assert.That(comboList, Is.Not.Null);
@@ -730,16 +729,146 @@ public class CombatArchitectureTests
         Assert.DoesNotThrow(() => comboList.ValidateConfiguration());
     }
 
+    [Test]
+    public void EveryComboRequiresRecoveryStartFrame()
+    {
+        ComboList comboList = BuildValidComboList("MissingChainFrameComboList");
+        comboList.ComboConfigs[0].RecoveryStartFrame = 0;
+
+        var exception = Assert.Throws<System.InvalidOperationException>(() => comboList.ValidateConfiguration());
+        Assert.That(exception.Message, Does.Contain("RecoveryStartFrame"));
+
+        DestroyComboListAssets(comboList);
+        Object.DestroyImmediate(comboList);
+    }
+
+    [Test]
+    public void LastComboAlsoRequiresRecoveryStartFrame()
+    {
+        ComboList comboList = BuildValidComboList("LastComboChainFrameList");
+        comboList.ComboConfigs[1].RecoveryStartFrame = 0;
+
+        var exception = Assert.Throws<System.InvalidOperationException>(() => comboList.ValidateConfiguration());
+        Assert.That(exception.Message, Does.Contain("RecoveryStartFrame"));
+
+        DestroyComboListAssets(comboList);
+        Object.DestroyImmediate(comboList);
+    }
+
+    [Test]
+    public void RecoveryStartCannotPrecedeLastHitFrame()
+    {
+        ComboList comboList = BuildValidComboList("ChainStartBeforeLastHitComboList");
+        comboList.ComboConfigs[0].RecoveryStartFrame = 4;
+
+        var exception = Assert.Throws<System.InvalidOperationException>(() => comboList.ValidateConfiguration());
+        Assert.That(exception.Message, Does.Contain("不能早于最后一次命中帧"));
+
+        DestroyComboListAssets(comboList);
+        Object.DestroyImmediate(comboList);
+    }
+
+    [Test]
+    public void LoopingAttackClipFailsValidation()
+    {
+        ComboList comboList = BuildValidComboList("LoopingAttackClipList");
+        AnimationClip clip = comboList.ComboConfigs[0].AttackClip;
+        AnimationClipSettings settings = AnimationUtility.GetAnimationClipSettings(clip);
+        settings.loopTime = true;
+        AnimationUtility.SetAnimationClipSettings(clip, settings);
+
+        var exception = Assert.Throws<System.InvalidOperationException>(() => comboList.ValidateConfiguration());
+        Assert.That(exception.Message, Does.Contain("AttackClip 必须关闭循环播放"));
+
+        DestroyComboListAssets(comboList);
+        Object.DestroyImmediate(comboList);
+    }
+
+    [Test]
+    public void AttackStateOwnsTimingWithoutRecoveryOrAttackAnimationEvents()
+    {
+        string attackStateSource = File.ReadAllText(ProjectPath(
+            "Assets/Scrips/Characters/Player/Statemachine/Movement/State/Attack/PlayerAttackState.cs"));
+        string stateMachineSource = File.ReadAllText(ProjectPath(
+            "Assets/Scrips/Characters/Player/Statemachine/Movement/PlayerMovementStateMachine.cs"));
+
+        Assert.That(attackStateSource, Does.Not.Contain("OnAnimationTransitionEvent"));
+        Assert.That(attackStateSource, Does.Not.Contain("OnAnimationExitEnvent"));
+        Assert.That(attackStateSource, Does.Not.Contain("AttackRecoveryState"));
+        Assert.That(stateMachineSource, Does.Not.Contain("AttackRecoveryState"));
+        Assert.That(File.Exists(ProjectPath(
+            "Assets/Scrips/Characters/Player/Statemachine/Movement/State/Attack/PlayerAttackRecoveryState.cs")), Is.False);
+    }
+
+    [Test]
+    public void AttackClipsNoLongerContainCombatTimingEvents()
+    {
+        string[] attackClipPaths =
+        {
+            "Assets/Animations/Characters/Player/Clip/Attack/AM_Attack01.anim",
+            "Assets/Animations/Characters/Player/Clip/Attack/AM_Attack02.anim",
+            "Assets/Animations/Characters/Player/Clip/Attack/AM_Attack03.anim",
+            "Assets/Animations/Characters/Player/Clip/Attack/AM_Attack04.anim",
+            "Assets/Animations/Characters/Player/Clip/Attack/AM_Attack05.anim"
+        };
+
+        foreach (string path in attackClipPaths)
+        {
+            string clipSource = File.ReadAllText(ProjectPath(path));
+            Assert.That(clipSource, Does.Not.Contain("TriggerOnMovementStateAnimationTransitionEvent"), path);
+            Assert.That(clipSource, Does.Not.Contain("TriggerOnMovementStateAnimationExitEvent"), path);
+        }
+    }
+
+    [Test]
+    public void CombatEventsRunOnlyAfterCurrentComboStateGuard()
+    {
+        string attackStateSource = File.ReadAllText(ProjectPath(
+            "Assets/Scrips/Characters/Player/Statemachine/Movement/State/Attack/PlayerAttackState.cs"));
+
+        int transitionGuardIndex = attackStateSource.IndexOf("animator.IsInTransition(0)");
+        int combatUpdateIndex = attackStateSource.IndexOf("combatExecutor.Update(normalizedTime)");
+
+        Assert.That(transitionGuardIndex, Is.GreaterThanOrEqualTo(0));
+        Assert.That(combatUpdateIndex, Is.GreaterThan(transitionGuardIndex));
+    }
+
+    [Test]
+    public void AttackUsesOneRecoveryFrameForComboMovementAndDashCancel()
+    {
+        string comboConfigSource = File.ReadAllText(ProjectPath(
+            "Assets/Scrips/Characters/Player/Data/ScriptableObject/Combo/ComboConfig.cs"));
+        string attackStateSource = File.ReadAllText(ProjectPath(
+            "Assets/Scrips/Characters/Player/Statemachine/Movement/State/Attack/PlayerAttackState.cs"));
+
+        Assert.That(comboConfigSource, Does.Not.Contain("DashCancelStartFrame"));
+        Assert.That(attackStateSource, Does.Not.Contain("GetDashCancelStartNormalizedTime"));
+        Assert.That(attackStateSource, Does.Contain("TryCancelToMovement"));
+        Assert.That(attackStateSource, Does.Contain("GetRecoveryStartNormalizedTime(currentComboIndex)"));
+    }
+
+    [Test]
+    public void ComboConfigOwnsRecoveryFrameValidation()
+    {
+        string comboConfigSource = File.ReadAllText(ProjectPath(
+            "Assets/Scrips/Characters/Player/Data/ScriptableObject/Combo/ComboConfig.cs"));
+        string comboListSource = File.ReadAllText(ProjectPath(
+            "Assets/Scrips/Characters/Player/Data/ScriptableObject/Combo/ComboList.cs"));
+
+        Assert.That(comboConfigSource, Does.Contain("ValidateRecoveryStart"));
+        Assert.That(comboListSource, Does.Not.Contain("ValidateRecoveryStart"));
+    }
+
     // 构造一份完全合法的两事件 ComboList，供各失败用例按需破坏单项字段。
     private static ComboList BuildValidComboList(string listName)
     {
         ComboList comboList = ScriptableObject.CreateInstance<ComboList>();
         comboList.name = listName;
-        SetComboConfigs(comboList, new[]
-        {
-            BuildValidCombo("Combo01", 3, 5),
-            BuildValidCombo("Combo02", 7, 10)
-        });
+        ComboConfig firstCombo = BuildValidCombo("Combo01", 3, 5);
+        firstCombo.RecoveryStartFrame = 20;
+        ComboConfig lastCombo = BuildValidCombo("Combo02", 7, 10);
+        lastCombo.RecoveryStartFrame = 20;
+        SetComboConfigs(comboList, new[] { firstCombo, lastCombo });
         return comboList;
     }
 

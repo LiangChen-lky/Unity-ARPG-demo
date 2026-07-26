@@ -39,14 +39,14 @@ public class PlayerHardLandingState : PlayerLandingState
         ResetVelocity();
     }
 
-    public override void OnAnimationExitEnvent(AnimationEvent animationEvent)
+    public override void OnAnimationExitEnvent()
     {
         stateMachine.Player.Input.PlayerActions.Movement.Enable();
     }
 
-    public override void OnAnimationTransitionEvent(AnimationEvent animationEvent)
+    public override void OnAnimationTransitionEvent()
     {
-        base.OnAnimationTransitionEvent(animationEvent);
+        base.OnAnimationTransitionEvent();
 
         stateMachine.ChangeState(stateMachine.IdlingState);
     }

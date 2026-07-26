@@ -24,7 +24,6 @@ public class PlayerMovementStateMachine : StateMachine
     public PlayerRollingState RollingState { get; }
     public PlayerHardLandingState HardLandingState { get; }
     
-    public PlayerAttackRecoveryState AttackRecoveryState { get; }
     public PlayerAttackState AttackState { get; }
     
     public PlayerMovementStateMachine(Player player)
@@ -51,7 +50,6 @@ public class PlayerMovementStateMachine : StateMachine
         RollingState = new PlayerRollingState(this);
         HardLandingState = new PlayerHardLandingState(this);
         
-        AttackRecoveryState = new PlayerAttackRecoveryState(this);
         AttackState = new PlayerAttackState(this);
     }
 

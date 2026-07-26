@@ -23,10 +23,23 @@ public class ComboConfig : ScriptableObject
     [Header("音效数据")]
     public SFXConfig[] SFXConfig;
 
+    [Header("后摇取消数据")]
+    // 每段从此帧起进入后摇：允许移动取消，以及配置启用时的冲刺取消；非末段还允许衔接下一段。
+    // 0 表示尚未配置，由 ComboList 在开发期拦截。
+    [Min(1)] public int RecoveryStartFrame;
+    // 冲刺取消与普通移动取消共用后摇起始帧；该字段只决定本段是否允许进入闪避冲刺。
+    public bool CanDashCancel;
+
     // 命中配置使用帧号编辑，这里统一换算为 Animator 使用的归一化进度。
     public float GetAttackDetectionNormalizedTime(AttackDetectionConfig detectionConfig)
     {
         return detectionConfig.GetNormalizedStartTime(AttackClip);
+    }
+
+    // 后摇起始帧沿用命中检测的帧号换算规则，统一由攻击状态读取动画归一化进度。
+    public float GetRecoveryStartNormalizedTime()
+    {
+        return (RecoveryStartFrame - 1) / (AttackClip.length * AttackClip.frameRate);
     }
 
     /// <summary>
@@ -47,6 +60,13 @@ public class ComboConfig : ScriptableObject
         if (AttackClip == null)
         {
             throw new InvalidOperationException($"{comboPrefix}（{ComboName}）：AttackClip 不能为 null。");
+        }
+
+        // 攻击状态以动画进度达到 1 作为自然结束条件，循环动画会破坏该时序语义。
+        if (AttackClip.isLooping)
+        {
+            throw new InvalidOperationException(
+                $"{comboPrefix}（{ComboName}）：AttackClip 必须关闭循环播放。");
         }
 
         // 动画长度或采样率为 0 时换算归一化进度会除零，属于无效动画配置。
@@ -79,6 +99,8 @@ public class ComboConfig : ScriptableObject
                 $"{comboPrefix}（{ComboName}）：AttackFeedbackConfig 不能为 null；没有打击感反馈时请配置为空数组。");
         }
 
+        int lastTriggerableFrame = Mathf.FloorToInt(clipFrameSpan);
+
         // 先排除任一方为 null：一边 null、一边空数组（[]）属于"检测盒或交互数据漏配"的隐蔽错误，
         // 必须先于"两边都为空"的无伤害招式判断拦截，否则会绕过下面的 null 校验直接放行。
         if (AttackDetectionConfig == null || InteractionConfig == null)
@@ -92,6 +114,7 @@ public class ComboConfig : ScriptableObject
         // 两边都是非 null 的空数组才表示这一段是无伤害招式；到此任一方都不为 null，可直接读 Length。
         if (AttackDetectionConfig.Length == 0 && InteractionConfig.Length == 0)
         {
+            ValidateRecoveryStart(comboPrefix, lastTriggerableFrame, 0);
             return;
         }
 
@@ -107,6 +130,24 @@ public class ComboConfig : ScriptableObject
         for (int eventIndex = 0; eventIndex < AttackDetectionConfig.Length; eventIndex++)
         {
             ValidateHitEvent(comboPrefix, eventIndex, lastStartFrame, clipFrameSpan, ref lastStartFrame);
+        }
+
+        ValidateRecoveryStart(comboPrefix, lastTriggerableFrame, lastStartFrame);
+    }
+
+    // 后摇起始帧和命中帧都属于单段招式数据，由本段自行保证取消不会跳过尚未触发的命中。
+    private void ValidateRecoveryStart(string comboPrefix, int lastTriggerableFrame, int lastHitFrame)
+    {
+        if (RecoveryStartFrame < 1 || RecoveryStartFrame > lastTriggerableFrame)
+        {
+            throw new InvalidOperationException(
+                $"{comboPrefix}（{ComboName}）：RecoveryStartFrame（{RecoveryStartFrame}）必须位于 1 到 {lastTriggerableFrame} 之间。");
+        }
+
+        if (RecoveryStartFrame < lastHitFrame)
+        {
+            throw new InvalidOperationException(
+                $"{comboPrefix}（{ComboName}）：RecoveryStartFrame（{RecoveryStartFrame}）不能早于最后一次命中帧（{lastHitFrame}）。");
         }
     }
 

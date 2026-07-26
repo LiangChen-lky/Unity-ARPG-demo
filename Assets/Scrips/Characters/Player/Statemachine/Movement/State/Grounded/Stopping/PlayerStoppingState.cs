@@ -30,16 +30,16 @@ public class PlayerStoppingState : PlayerGroundedState
         DecelerateHorizontally();
     }
 
-    public override void OnAnimationTransitionEvent(AnimationEvent animationEvent)
+    public override void OnAnimationTransitionEvent()
     {
-        base.OnAnimationTransitionEvent(animationEvent);
+        base.OnAnimationTransitionEvent();
         
         stateMachine.ChangeState(stateMachine.IdlingState);
     }
 
-    public override void OnAnimationExitEnvent(AnimationEvent animationEvent)
+    public override void OnAnimationExitEnvent()
     {
-        base.OnAnimationExitEnvent(animationEvent);
+        base.OnAnimationExitEnvent();
 
         ResetHorizontalVelocity();
     }

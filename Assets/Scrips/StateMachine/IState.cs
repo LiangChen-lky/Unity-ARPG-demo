@@ -1,5 +1,3 @@
-using UnityEngine;
-
 public interface IState
 {
     void Enter();
@@ -8,8 +6,7 @@ public interface IState
     void Update();
     void PhysicsUpdate();
     void OnAnimationEnterEvent();
-    // 传递触发事件的动画来源，供状态区分过渡中的旧动画 Clip。
-    void OnAnimationExitEnvent(AnimationEvent animationEvent);
-    // 传递 Transition 事件的动画来源，避免过渡中的旧 Clip 误推进状态。
-    void OnAnimationTransitionEvent(AnimationEvent animationEvent);
+    // 动画事件只作为状态切换通知，具体状态不再读取事件对象。
+    void OnAnimationExitEnvent();
+    void OnAnimationTransitionEvent();
 }

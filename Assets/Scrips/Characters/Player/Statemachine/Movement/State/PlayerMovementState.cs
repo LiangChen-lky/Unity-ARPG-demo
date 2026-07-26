@@ -58,12 +58,12 @@ public class PlayerMovementState : IState, ITriggerHandler
         
     }
 
-    public virtual void OnAnimationExitEnvent(AnimationEvent animationEvent)
+    public virtual void OnAnimationExitEnvent()
     {
         
     }
 
-    public virtual void OnAnimationTransitionEvent(AnimationEvent animationEvent)
+    public virtual void OnAnimationTransitionEvent()
     {
         
     }
@@ -398,8 +398,7 @@ public class PlayerMovementState : IState, ITriggerHandler
     
     protected virtual void OnAttackStarted(InputAction.CallbackContext context)
     {
-        // 连击数据是进入攻击状态的硬前提，先校验再切换状态，避免留下半初始化的攻击状态。
-        stateMachine.AttackState.ValidateConfiguration();
+        // 攻击状态会在 Enter 的最开始校验配置，避免在两个入口重复执行同一份校验。
         stateMachine.ChangeState(stateMachine.AttackState);
     }
     #endregion

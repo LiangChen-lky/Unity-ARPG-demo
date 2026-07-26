@@ -1,5 +1,3 @@
-using UnityEngine;
-
 public abstract class StateMachine
 {
     protected IState currentState;
@@ -24,14 +22,14 @@ public abstract class StateMachine
         currentState?.OnAnimationEnterEvent();
     }
 
-    public void OnAnimationExitEvent(AnimationEvent animationEvent)
+    public void OnAnimationExitEvent()
     {
-        currentState?.OnAnimationExitEnvent(animationEvent);
+        currentState?.OnAnimationExitEnvent();
     }
 
-    public void OnAnimationTransitionEvent(AnimationEvent animationEvent)
+    public void OnAnimationTransitionEvent()
     {
-        currentState?.OnAnimationTransitionEvent(animationEvent);
+        currentState?.OnAnimationTransitionEvent();
     }
     
     public void ChangeState(IState newState)

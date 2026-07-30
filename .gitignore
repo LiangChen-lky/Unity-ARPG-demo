@@ -30,3 +30,6 @@
 # Local MCP client configuration (may contain machine-specific paths or secrets)
 /.claude/mcp.json
 /.mcp.json
+
+# Local Claude Code guidance
+/CLAUDE.md

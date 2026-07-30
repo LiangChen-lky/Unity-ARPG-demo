@@ -4,8 +4,14 @@ using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
 
+/// <summary>
+/// 动画运动离线烘焙器的 EditMode 测试，按流水线分六组：配置持久化、目标扫描、曲线换算、校验、写回，
+/// 以及跑在项目真实资产上的端到端采样。
+/// </summary>
 public class AnimationMotionBakerTests
 {
+    // ---- 配置：验证窗口配置被复制进持久化设置，而非共享引用 ----
+
     [Test]
     public void BakerSettingsCopiesWindowConfiguration()
     {
@@ -31,6 +37,8 @@ public class AnimationMotionBakerTests
         Object.DestroyImmediate(settings);
     }
 
+    // ---- 扫描：验证内嵌 MotionData 的定位、容器展开与去重，最后一项跑在真实 Player.asset 上 ----
+
     [Test]
     public void ScannerFindsMotionDataEmbeddedInComboConfig()
     {
@@ -51,6 +59,7 @@ public class AnimationMotionBakerTests
         Object.DestroyImmediate(comboConfig);
     }
 
+    // ComboList 与其成员之一同时作为扫描根传入，结果应展开容器且该成员不被重复烘焙。
     [Test]
     public void ScannerExpandsComboListAndRemovesDuplicateOwners()
     {
@@ -92,6 +101,8 @@ public class AnimationMotionBakerTests
             targets.Count(target => target.PropertyPath.EndsWith("MotionData")),
             Is.EqualTo(3));
     }
+
+    // ---- 曲线换算：验证本地 Z 有符号速度、累计偏航以及忽略横向位移的既定数据契约 ----
 
     [Test]
     public void CurveBuilderProducesSignedForwardSpeedAndAccumulatedYaw()
@@ -142,6 +153,8 @@ public class AnimationMotionBakerTests
         Assert.That(result.SpeedCurve.Evaluate(0.5f), Is.EqualTo(-1f).Within(0.001f));
     }
 
+    // ---- 校验：Combo 仍由 AttackClip 播放时，MotionData 不能引用另一段动画 ----
+
     [Test]
     public void ValidatorRejectsDifferentComboClipSources()
     {
@@ -163,6 +176,8 @@ public class AnimationMotionBakerTests
         Object.DestroyImmediate(motionClip);
         Object.DestroyImmediate(comboConfig);
     }
+
+    // ---- 写回：验证扫描所得 PropertyPath 能把曲线写回内嵌数据，同时保持运行时访问器只读 ----
 
     [Test]
     public void WriterUpdatesEmbeddedMotionDataThroughPropertyPath()
@@ -193,6 +208,8 @@ public class AnimationMotionBakerTests
         Object.DestroyImmediate(clip);
         Object.DestroyImmediate(comboConfig);
     }
+
+    // ---- 真实资产：使用当前 Y Bot、Combo 与 Stop 动画验证 Humanoid Root Motion 可以被完整采样 ----
 
     [Test]
     public void CurrentHumanoidSampleProducesRootMotionCurves()
@@ -262,6 +279,7 @@ public class AnimationMotionBakerTests
         }
     }
 
+    // 构造只包含前向位移的临时动画，供扫描、校验和写回测试隔离使用。
     private static AnimationClip BuildClip(string clipName)
     {
         AnimationClip clip = new AnimationClip
@@ -277,6 +295,7 @@ public class AnimationMotionBakerTests
         return clip;
     }
 
+    // 通过 SerializedProperty 配置内嵌 MotionData.Clip，模拟烘焙器面对的真实序列化结构。
     private static void SetComboClips(
         ComboConfig comboConfig,
         AnimationClip attackClip,
@@ -290,6 +309,7 @@ public class AnimationMotionBakerTests
         serializedCombo.ApplyModifiedPropertiesWithoutUndo();
     }
 
+    // 填充 ComboList 的自动属性后备字段，用于验证容器展开和 Owner 去重。
     private static void SetComboList(
         ComboList comboList,
         params ComboConfig[] comboConfigs)

@@ -14,6 +14,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ComboName: Base Layer.Attack.AM_Attack05
   AttackClip: {fileID: 7400000, guid: 109d1d4d9c35e5d44843a604f0f05996, type: 2}
+  motionData:
+    clip: {fileID: 7400000, guid: 109d1d4d9c35e5d44843a604f0f05996, type: 2}
+    speedCurve:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    rotationCurve:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    bakedDuration: 0
   InteractionConfig: []
   AttackDetectionConfig: []
   AttackFeedbackConfig: []

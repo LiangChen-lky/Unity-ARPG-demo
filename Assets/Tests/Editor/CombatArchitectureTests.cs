@@ -279,7 +279,7 @@ public class CombatArchitectureTests
             nameof(IState.OnAnimationTransitionEvent));
         MethodInfo triggerTransitionMethod = typeof(PlayerAnimationEventTrigger).GetMethod(
             nameof(PlayerAnimationEventTrigger.TriggerOnMovementStateAnimationTransitionEvent));
-        MethodInfo stateExitMethod = typeof(IState).GetMethod(nameof(IState.OnAnimationExitEnvent));
+        MethodInfo stateExitMethod = typeof(IState).GetMethod(nameof(IState.OnAnimationExitEvent));
         MethodInfo triggerExitMethod = typeof(PlayerAnimationEventTrigger).GetMethod(
             nameof(PlayerAnimationEventTrigger.TriggerOnMovementStateAnimationExitEvent));
 
@@ -793,7 +793,7 @@ public class CombatArchitectureTests
             "Assets/Scrips/Characters/Player/Statemachine/Movement/PlayerMovementStateMachine.cs"));
 
         Assert.That(attackStateSource, Does.Not.Contain("OnAnimationTransitionEvent"));
-        Assert.That(attackStateSource, Does.Not.Contain("OnAnimationExitEnvent"));
+        Assert.That(attackStateSource, Does.Not.Contain("OnAnimationExitEvent"));
         Assert.That(attackStateSource, Does.Not.Contain("AttackRecoveryState"));
         Assert.That(stateMachineSource, Does.Not.Contain("AttackRecoveryState"));
         Assert.That(File.Exists(ProjectPath(

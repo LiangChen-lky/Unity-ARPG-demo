@@ -24,7 +24,7 @@ public abstract class StateMachine
 
     public void OnAnimationExitEvent()
     {
-        currentState?.OnAnimationExitEnvent();
+        currentState?.OnAnimationExitEvent();
     }
 
     public void OnAnimationTransitionEvent()

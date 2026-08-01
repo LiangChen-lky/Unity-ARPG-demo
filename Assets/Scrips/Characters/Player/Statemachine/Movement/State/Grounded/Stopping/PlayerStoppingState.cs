@@ -66,9 +66,9 @@ public class PlayerStoppingState : PlayerGroundedState
         stateMachine.ChangeState(stateMachine.IdlingState);
     }
 
-    public override void OnAnimationExitEnvent()
+    public override void OnAnimationExitEvent()
     {
-        base.OnAnimationExitEnvent();
+        base.OnAnimationExitEvent();
 
         motionDriver.Stop();
         ResetHorizontalVelocity();

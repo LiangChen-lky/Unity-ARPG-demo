@@ -2618,4 +2618,4 @@ MonoBehaviour:
   FXConfig: []
   SFXConfig: []
   RecoveryStartFrame: 51
-  CanDashCancel: 0
+  CanDashCancel: 1

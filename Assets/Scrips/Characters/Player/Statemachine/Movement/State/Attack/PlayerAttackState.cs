@@ -226,14 +226,9 @@ public class PlayerAttackState : PlayerGroundedState
 
     protected override void OnDashStarted(InputAction.CallbackContext context)
     {
-        if (!TryGetCurrentComboNormalizedTime(out float normalizedTime))
-        {
-            return;
-        }
-
         ComboConfig comboConfig = attackData.CurrentComboList.ComboConfigs[currentComboIndex];
-        float recoveryStart = attackData.CurrentComboList.GetRecoveryStartNormalizedTime(currentComboIndex);
-        if (!comboConfig.CanDashCancel || normalizedTime < recoveryStart)
+        // 开启后，本段攻击从进入状态起即可被冲刺打断，包括动画过渡阶段。
+        if (!comboConfig.CanDashCancel)
         {
             return;
         }

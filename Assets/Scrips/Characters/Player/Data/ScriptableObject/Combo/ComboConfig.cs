@@ -30,11 +30,11 @@ public class ComboConfig : ScriptableObject
     [Header("音效数据")]
     public SFXConfig[] SFXConfig;
 
-    [Header("后摇取消数据")]
-    // 每段从此帧起进入后摇：允许移动取消，以及配置启用时的冲刺取消；非末段还允许衔接下一段。
+    [Header("取消与衔接数据")]
+    // 每段从此帧起进入后摇：允许移动取消；非末段还允许衔接下一段。
     // 0 表示尚未配置，由 ComboList 在开发期拦截。
     [Min(1)] public int RecoveryStartFrame;
-    // 冲刺取消与普通移动取消共用后摇起始帧；该字段只决定本段是否允许进入闪避冲刺。
+    // 开启后，本段从进入攻击状态起全流程允许冲刺取消，不受 RecoveryStartFrame 限制。
     public bool CanDashCancel;
 
     // 命中配置使用帧号编辑，这里统一换算为 Animator 使用的归一化进度。

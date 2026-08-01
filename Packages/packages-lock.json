@@ -17,6 +17,14 @@
       },
       "hash": "d49ae2953580f3481beb1e084a1da2682f0b5610"
     },
+    "com.kybernetik.animancer": {
+      "version": "file:com.kybernetik.animancer",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {
+        "com.unity.modules.animation": "1.0.0"
+      }
+    },
     "com.unity.animation.rigging": {
       "version": "1.4.1",
       "depth": 0,

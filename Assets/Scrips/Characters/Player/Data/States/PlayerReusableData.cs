@@ -5,7 +5,8 @@ public class PlayerReusableData
     public Vector2 MovementInput { get; set; }
     public float MovementSpeedModifier { get; set; }
     public float MovementOnSlopeSpeedModifier { get; set; }
-    public float MovementDecelerationForce { get; set; }
+    // TODO：MotionDriver PlayMode 验证通过后删除旧停止减速数据。
+    // public float MovementDecelerationForce { get; set; }
     public PlayerRotationData RotationData { get; set; }
     
     public Vector3 CurrentJumpForce { get; set; }

@@ -4,14 +4,18 @@ using UnityEngine;
 [Serializable]
 public class PlayerStopData
 {
+    // TODO：MotionDriver PlayMode 验证通过后连同 Player.asset 中的旧序列化数据一起删除。
+    [Obsolete("已由 AnimationMotionData.SpeedCurve 替代，完成 MotionDriver 验证后删除。")]
     [field: SerializeField]
     [field: Range(0f, 15f)]
     public float LightDecelerationForce { get; private set; } = 5f;
 
+    [Obsolete("已由 AnimationMotionData.SpeedCurve 替代，完成 MotionDriver 验证后删除。")]
     [field: SerializeField]
     [field: Range(0f, 15f)]
     public float MediumDecelerationForce { get; private set; } = 6.5f;
 
+    [Obsolete("已由 AnimationMotionData.SpeedCurve 替代，完成 MotionDriver 验证后删除。")]
     [field: SerializeField]
     [field: Range(0f, 15f)]
     public float HardDecelerationForce { get; private set; } = 5f;

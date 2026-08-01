@@ -8,6 +8,15 @@ This is a Unity Action RPG demo built with Unity 6.5.3f1 (6000.5.3f1). The playe
 hierarchical finite state machine (HFSM) for movement and combat state
 orchestration.
 
+`CLAUDE.md` holds the same guidance in more detail; keep both in sync when the
+architecture changes.
+
+Note: the scripts folder is `Assets/Scrips` (no 't'). This spelling is
+intentional and used throughout the project.
+
+Code identifiers are English; inline comments are written in Chinese. Match the
+surrounding comment language when editing.
+
 ## Architecture
 
 ### State Machine
@@ -35,12 +44,47 @@ orchestration.
   cursors, and attacker effects.
 - Targets implement `IHitReceiver` and receive an immutable `HitContext`
   instead of attacker-owned configuration objects.
-- `CombatControllerBase` is the current scene receiver implementation. It
-  handles hit animation, target effects, and configured hit movement.
+- `HitReceiverBase` is the default hit-reaction MonoBehaviour (faces the
+  attacker, plays a force-indexed effect). It is not an Enemy base class; both
+  player and enemy receivers subclass it. `EnemyHitReceiver` is the scene
+  implementation `CombatExecutor` resolves via `GetComponentInParent`.
+- `HitContext` carries only confirmed-hit facts (source position, forward,
+  `AttackForce`, damage). Do not add hit-animation, weapon, or movement fields
+  to it or to `ComboInteractionConfig` — those are receiver-owned.
 - `CombatEffectSpawner` is stateless and injected into `CombatExecutor`.
   Direct prefab instantiation remains the future object-pooling boundary.
+- `ComboConfig.Validate` throws on inconsistent authoring. Extend that
+  validation rather than adding silent runtime fallbacks.
 - Do not add a global singleton, event bus, or second input owner without a
-  concrete cross-system requirement.
+  concrete cross-system requirement. The old `Singleton`/`MonoSingleton`
+  infrastructure was removed; do not reintroduce it.
+
+### Animation Motion
+
+Horizontal movement for stop and attack animations is baked from Root Motion
+offline and replayed at runtime. The only interface between the editor and
+runtime halves is the serialized `AnimationMotionData`.
+
+- `Data/Animation/AnimationMotionData.cs` is the serialized payload
+  (`SpeedCurve`, `RotationCurve`, `BakedDuration`), read-only at runtime.
+- `Player/Editor/AnimationMotionBaker/` is the bake pipeline: scanner →
+  sampler → validator → writer, driven by `AnimationMotionBakerWindow`
+  (menu: Tools → Animation → Animation Motion Baker). Settings persist to
+  `ProjectSettings/AnimationMotionBakerSettings.asset`.
+- `Player/Utilities/Motion/MotionDriver.cs` replays a curve onto the
+  Rigidbody's horizontal velocity, preserving vertical velocity. `Stop()`
+  intentionally does not zero velocity.
+- Runtime code must not author `AnimationMotionData`, and bake code must not
+  touch scene or runtime objects.
+
+### Work In Progress
+
+The branch is mid-migration from force-based deceleration to baked motion
+curves. Superseded code is commented out behind
+`TODO：MotionDriver PlayMode 验证通过后…` markers, and `PlayerStopData`'s
+`*DecelerationForce` properties are `[Obsolete]` but still serialized. Do not
+delete these as an incidental cleanup — the serialized values in `Player.asset`
+must be cleared first, after PlayMode validation.
 
 ### Data
 
@@ -68,11 +112,26 @@ or removing scripts.
 
 ### Tests
 
-- EditMode architecture tests:
-  `Assets/Tests/Editor/CombatArchitectureTests.cs`
-- Run them from Unity Test Runner in EditMode.
-- The tests guard the combat contract, attack-state boundary, single input
-  owner, scene serialization cleanup, and removal of obsolete infrastructure.
+EditMode tests live in `Assets/Tests/Editor/` and run from the Unity Test
+Runner in EditMode:
+
+- `CombatArchitectureTests.cs` guards the combat contract, attack-state
+  boundary, single input owner, scene serialization cleanup, and removal of
+  obsolete infrastructure.
+- `AnimationMotionDataTests.cs`, `AnimationMotionBakerTests.cs`, and
+  `MotionDriverTests.cs` cover the motion bake pipeline and runtime driver.
+- `Unity6MigrationBehaviorTests.cs` and `ForwardPlusToonShaderTests.cs` cover
+  the Unity 6 migration (`Unity6Migration` category).
+
+To run a single test or class from the CLI:
+
+```powershell
+& "<UnityEditorPath>\Unity.exe" -batchmode -runTests -projectPath . `
+    -testPlatform EditMode -testFilter MotionDriverTests -logFile -
+```
+
+These are architectural guardrails, not behavior tests. Run them after touching
+combat, input, motion, or scene structure.
 
 ### Input
 
@@ -98,12 +157,16 @@ Assets/
 |-- InputActions/
 |-- Scenes/
 |-- Scrips/
-|   |-- Characters/Player/
-|   |   |-- AttackSystem/
-|   |   |-- Data/
-|   |   |-- Player.cs
-|   |   |-- Statemachine/Movement/
-|   |   `-- Utilities/
+|   |-- Characters/
+|   |   |-- Combat/                     # HitContract, HitReceiverBase, spawner
+|   |   |-- Enemy/
+|   |   `-- Player/
+|   |       |-- AttackSystem/           # CombatExecutor
+|   |       |-- Data/
+|   |       |-- Editor/                 # AnimationMotionBaker pipeline
+|   |       |-- Player.cs
+|   |       |-- Statemachine/Movement/
+|   |       `-- Utilities/              # Input, Cameras, Colliders, Motion
 |   |-- StateMachine/
 |   `-- Weapons/
 |-- ScriptableObjects/

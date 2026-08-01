@@ -10,17 +10,21 @@ public class PlayerAttackState : PlayerGroundedState
 {
     private readonly PlayerAttackData attackData;
     private readonly CombatExecutor combatExecutor;
+    private readonly MotionDriver motionDriver;
 
     // 连击段切换使用固定秒数过渡，避免散落的匿名数值难以追溯。
     private const float ComboTransitionDuration = 0.1555f;
 
     // 当前正在播放的线性连招段；下一段固定为数组中的后一项。
     private int currentComboIndex;
+    // 运动采样同时支持 Animator 过渡期，因此缓存完整状态路径 Hash 匹配下一状态。
+    private int currentComboStateHash;
 
     public PlayerAttackState(PlayerMovementStateMachine stateMachine) : base(stateMachine)
     {
         attackData = stateMachine.Player.Data.AttackData;
         combatExecutor = stateMachine.CombatExecutor;
+        motionDriver = new MotionDriver(stateMachine.Player.Rigidbody);
     }
 
     #region IState Methods
@@ -41,7 +45,9 @@ public class PlayerAttackState : PlayerGroundedState
 
     public override void Exit()
     {
+        motionDriver.Stop();
         currentComboIndex = 0;
+        currentComboStateHash = 0;
         combatExecutor.EndAttack();
         stateMachine.Player.WeaponController?.CancelAttack();
         base.Exit();
@@ -50,6 +56,8 @@ public class PlayerAttackState : PlayerGroundedState
     public override void Update()
     {
         base.Update();
+
+        UpdateMotionTime();
 
         if (!TryGetCurrentComboNormalizedTime(out float normalizedTime))
         {
@@ -68,6 +76,13 @@ public class PlayerAttackState : PlayerGroundedState
         {
             HandleAttackFinished();
         }
+    }
+
+    public override void PhysicsUpdate()
+    {
+        base.PhysicsUpdate();
+
+        motionDriver.PhysicsUpdate();
     }
 
     #endregion
@@ -126,16 +141,41 @@ public class PlayerAttackState : PlayerGroundedState
         return true;
     }
 
+    /// <summary>
+    /// 运动曲线需要覆盖 CrossFade 开头，因此过渡期读取下一状态；命中与取消仍沿用原来的严格时序。
+    /// </summary>
+    private void UpdateMotionTime()
+    {
+        Animator animator = stateMachine.Player.Animator;
+        AnimatorStateInfo stateInfo = animator.IsInTransition(0)
+            ? animator.GetNextAnimatorStateInfo(0)
+            : animator.GetCurrentAnimatorStateInfo(0);
+
+        if (stateInfo.fullPathHash == currentComboStateHash)
+        {
+            motionDriver.SetNormalizedTime(stateInfo.normalizedTime);
+        }
+    }
+
     private void ExecuteCombo(int comboIndex)
     {
         currentComboIndex = comboIndex;
         combatExecutor.BeginCombo(currentComboIndex);
 
+        ComboConfig comboConfig =
+            attackData.CurrentComboList.ComboConfigs[currentComboIndex];
+        currentComboStateHash = Animator.StringToHash(comboConfig.ComboName);
+
         stateMachine.Player.Animator.CrossFadeInFixedTime(
-            attackData.CurrentComboList.GetComboName(currentComboIndex),
+            comboConfig.ComboName,
             ComboTransitionDuration,
             0,
             0);
+
+        // 每段 Combo 锁定开始时的角色前向，运行过程中不根据实时 WASD 改变轨迹。
+        Vector3 motionDirection =
+            stateMachine.Player.Rigidbody.rotation * Vector3.forward;
+        motionDriver.Begin(comboConfig.MotionData, motionDirection);
     }
 
     private void HandleAttackFinished()

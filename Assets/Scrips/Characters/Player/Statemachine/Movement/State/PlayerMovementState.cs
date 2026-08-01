@@ -233,13 +233,14 @@ public class PlayerMovementState : IState, ITriggerHandler
         stateMachine.Player.Rigidbody.MoveRotation(targetRotation);
     }
 
-    protected void DecelerateHorizontally()
-    {
-        Vector3 horizontalVelocity = GetPlayerHorizontalVelocity();
-        stateMachine.Player.Rigidbody.AddForce(
-            -horizontalVelocity * stateMachine.ReusableData.MovementDecelerationForce,
-            ForceMode.Acceleration);
-    }
+    // TODO：MotionDriver PlayMode 验证通过后删除旧停止减速方法。
+    // protected void DecelerateHorizontally()
+    // {
+    //     Vector3 horizontalVelocity = GetPlayerHorizontalVelocity();
+    //     stateMachine.Player.Rigidbody.AddForce(
+    //         -horizontalVelocity * stateMachine.ReusableData.MovementDecelerationForce,
+    //         ForceMode.Acceleration);
+    // }
 
     protected bool IsMovingHorizontally(float minimumMagnitude = 0.1f)
     {

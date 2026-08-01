@@ -1687,5 +1687,5 @@ MonoBehaviour:
   AttackFeedbackConfig: []
   FXConfig: []
   SFXConfig: []
-  RecoveryStartFrame: 16
+  RecoveryStartFrame: 15
   CanDashCancel: 1

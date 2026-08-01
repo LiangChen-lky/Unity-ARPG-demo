@@ -11,6 +11,7 @@ public class PlayerAttackState : PlayerGroundedState
     private readonly PlayerAttackData attackData;
     private readonly CombatExecutor combatExecutor;
     private readonly MotionDriver motionDriver;
+    private readonly PlayerActionBuffer actionBuffer;
 
     // 连击段切换使用固定秒数过渡，避免散落的匿名数值难以追溯。
     private const float ComboTransitionDuration = 0.1555f;
@@ -25,6 +26,7 @@ public class PlayerAttackState : PlayerGroundedState
         attackData = stateMachine.Player.Data.AttackData;
         combatExecutor = stateMachine.CombatExecutor;
         motionDriver = new MotionDriver(stateMachine.Player.Rigidbody);
+        actionBuffer = stateMachine.ActionBuffer;
     }
 
     #region IState Methods
@@ -46,6 +48,8 @@ public class PlayerAttackState : PlayerGroundedState
     public override void Exit()
     {
         motionDriver.Stop();
+        // 冲刺取消、移动取消与自然结束都经由此处，统一清除尚未消费的攻击输入。
+        actionBuffer.Clear(PlayerActionType.Attack);
         currentComboIndex = 0;
         currentComboStateHash = 0;
         combatExecutor.EndAttack();
@@ -66,6 +70,12 @@ public class PlayerAttackState : PlayerGroundedState
 
         // 仅确认当前 Animator 已切到本段后，才允许执行本段命中和攻击 FX。
         combatExecutor.Update(normalizedTime);
+
+        // 攻击衔接优先于同帧的移动取消：缓存有效时即使按住移动也继续连招。
+        if (TryContinueCombo(normalizedTime))
+        {
+            return;
+        }
 
         if (TryCancelToMovement(normalizedTime))
         {
@@ -94,6 +104,14 @@ public class PlayerAttackState : PlayerGroundedState
     /// </summary>
     public void ValidateConfiguration()
     {
+        // 缓冲时长为 0 会让预输入永远失效，属于配置错误，不在运行时替换为默认值。
+        if (attackData.AttackBufferDuration <= 0f)
+        {
+            throw new InvalidOperationException(
+                $"PlayerAttackState 的 AttackBufferDuration（{attackData.AttackBufferDuration}）必须大于 0，" +
+                "请在 Player 配置资产中填写攻击预输入的有效时长。");
+        }
+
         ComboList comboList = attackData.CurrentComboList;
         if (comboList == null)
         {
@@ -190,6 +208,36 @@ public class PlayerAttackState : PlayerGroundedState
         OnMove();
     }
 
+    /// <summary>
+    /// 后摇窗口开启后消费预输入并衔接下一段；窗口未开启时不提前消费，让输入留在缓冲中继续等待。
+    /// </summary>
+    private bool TryContinueCombo(float normalizedTime)
+    {
+        int comboCount = attackData.CurrentComboList.ComboCount;
+        if (currentComboIndex >= comboCount - 1)
+        {
+            return false;
+        }
+
+        float chainStart =
+            attackData.CurrentComboList.GetRecoveryStartNormalizedTime(currentComboIndex);
+        if (normalizedTime < chainStart)
+        {
+            return false;
+        }
+
+        if (!actionBuffer.TryConsume(
+                PlayerActionType.Attack,
+                Time.time,
+                attackData.AttackBufferDuration))
+        {
+            return false;
+        }
+
+        ExecuteCombo(currentComboIndex + 1);
+        return true;
+    }
+
     // 后摇开始后，持续按住或新按下移动都可立即离开攻击，避免无效帧锁住角色。
     private bool TryCancelToMovement(float normalizedTime)
     {
@@ -210,18 +258,14 @@ public class PlayerAttackState : PlayerGroundedState
     protected override void OnAttackStarted(InputAction.CallbackContext context)
     {
         int comboCount = attackData.CurrentComboList.ComboCount;
-        if (currentComboIndex >= comboCount - 1 ||
-            !TryGetCurrentComboNormalizedTime(out float normalizedTime))
+        // 末段不再记录，避免最后一段反复按攻击后循环回第一段。
+        if (currentComboIndex >= comboCount - 1)
         {
             return;
         }
 
-        // 本轮不缓存输入：只有进入后摇起始帧后按下攻击，才立刻衔接下一段。
-        float chainStart = attackData.CurrentComboList.GetRecoveryStartNormalizedTime(currentComboIndex);
-        if (normalizedTime >= chainStart)
-        {
-            ExecuteCombo(currentComboIndex + 1);
-        }
+        // 攻击回调只记录玩家意图，实际衔接由 Update 在后摇窗口开启后决定。
+        actionBuffer.Record(PlayerActionType.Attack, Time.time);
     }
 
     protected override void OnDashStarted(InputAction.CallbackContext context)

@@ -2667,3 +2667,4 @@ MonoBehaviour:
     <TargetLayer>k__BackingField:
       serializedVersion: 2
       m_Bits: 256
+    <AttackBufferDuration>k__BackingField: 0.2

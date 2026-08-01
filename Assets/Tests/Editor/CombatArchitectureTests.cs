@@ -380,7 +380,7 @@ public class CombatArchitectureTests
         // 攻击状态不得直接触碰检测/交互配置类型，字段校验必须在数据层完成。
         string attackStateSource = File.ReadAllText(ProjectPath(
             "Assets/Scrips/Characters/Player/Statemachine/Movement/State/Attack/PlayerAttackState.cs"));
-        Assert.That(attackStateSource, Does.Contain("CurrentComboList.ValidateConfiguration"));
+        Assert.That(attackStateSource, Does.Contain("comboList.ValidateConfiguration()"));
         Assert.That(attackStateSource, Does.Not.Contain("AttackDetectionConfig"));
         Assert.That(attackStateSource, Does.Not.Contain("ComboInteractionConfig"));
 
@@ -709,7 +709,10 @@ public class CombatArchitectureTests
     {
         ComboList comboList = ScriptableObject.CreateInstance<ComboList>();
         comboList.name = "NoDamageComboList";
-        SetComboConfigs(comboList, new[] { BuildNoDamageCombo("NoDamage01") });
+        ComboConfig noDamageCombo = BuildNoDamageCombo("NoDamage01");
+        // 本测试只验证空命中数组；其余必填配置必须保持合法，避免被恢复帧校验提前拦截。
+        noDamageCombo.RecoveryStartFrame = 20;
+        SetComboConfigs(comboList, new[] { noDamageCombo });
 
         // 两个数组都为空表示这一段是无伤害招式，是合法配置。
         Assert.DoesNotThrow(() => comboList.ValidateConfiguration());
@@ -825,12 +828,19 @@ public class CombatArchitectureTests
     {
         string attackStateSource = File.ReadAllText(ProjectPath(
             "Assets/Scrips/Characters/Player/Statemachine/Movement/State/Attack/PlayerAttackState.cs"));
+        int updateStart = attackStateSource.IndexOf("public override void Update()");
+        int updateEnd = attackStateSource.IndexOf("public override void PhysicsUpdate()");
+        Assert.That(updateStart, Is.GreaterThanOrEqualTo(0));
+        Assert.That(updateEnd, Is.GreaterThan(updateStart));
+        string updateSource = attackStateSource.Substring(updateStart, updateEnd - updateStart);
 
-        int transitionGuardIndex = attackStateSource.IndexOf("animator.IsInTransition(0)");
-        int combatUpdateIndex = attackStateSource.IndexOf("combatExecutor.Update(normalizedTime)");
+        int comboStateGuardIndex = updateSource.IndexOf(
+            "TryGetCurrentComboNormalizedTime(out float normalizedTime)");
+        int combatUpdateIndex = updateSource.IndexOf("combatExecutor.Update(normalizedTime)");
 
-        Assert.That(transitionGuardIndex, Is.GreaterThanOrEqualTo(0));
-        Assert.That(combatUpdateIndex, Is.GreaterThan(transitionGuardIndex));
+        // 比较 Update 内的实际调用顺序，不依赖守卫方法在源码文件中的物理位置。
+        Assert.That(comboStateGuardIndex, Is.GreaterThanOrEqualTo(0));
+        Assert.That(combatUpdateIndex, Is.GreaterThan(comboStateGuardIndex));
     }
 
     [Test]
@@ -937,6 +947,116 @@ public class CombatArchitectureTests
         {
             Object.DestroyImmediate(animatorOwner);
         }
+    }
+
+    [Test]
+    public void CombatExecutorStaysOutOfInputBuffering()
+    {
+        string executorSource = File.ReadAllText(ProjectPath(
+            "Assets/Scrips/Characters/Player/AttackSystem/CombatExecutor.cs"));
+
+        // 命中执行器只消费动画进度，不得读取预输入或决定下一段招式。
+        Assert.That(executorSource, Does.Not.Contain("PlayerActionBuffer"));
+        Assert.That(executorSource, Does.Not.Contain("PlayerActionType"));
+        Assert.That(executorSource, Does.Not.Contain("ExecuteCombo"));
+    }
+
+    [Test]
+    public void AttackStateOwnsAttackInputBufferingAndConsumption()
+    {
+        string attackStateSource = File.ReadAllText(ProjectPath(
+            "Assets/Scrips/Characters/Player/Statemachine/Movement/State/Attack/PlayerAttackState.cs"));
+        string stateMachineSource = File.ReadAllText(ProjectPath(
+            "Assets/Scrips/Characters/Player/Statemachine/Movement/PlayerMovementStateMachine.cs"));
+
+        // 缓冲器由状态机持有，攻击状态负责记录、消费与退出清理。
+        Assert.That(stateMachineSource, Does.Contain("public PlayerActionBuffer ActionBuffer"));
+        Assert.That(attackStateSource, Does.Contain("actionBuffer = stateMachine.ActionBuffer"));
+        Assert.That(attackStateSource, Does.Contain("actionBuffer.Record(PlayerActionType.Attack"));
+        Assert.That(attackStateSource, Does.Contain("actionBuffer.TryConsume("));
+        Assert.That(attackStateSource, Does.Contain("actionBuffer.Clear(PlayerActionType.Attack)"));
+    }
+
+    [Test]
+    public void AttackCallbackOnlyRecordsIntentWithoutExecutingCombo()
+    {
+        string attackStateSource = File.ReadAllText(ProjectPath(
+            "Assets/Scrips/Characters/Player/Statemachine/Movement/State/Attack/PlayerAttackState.cs"));
+        int callbackStart = attackStateSource.IndexOf("protected override void OnAttackStarted");
+        int callbackEnd = attackStateSource.IndexOf("protected override void OnDashStarted");
+        Assert.That(callbackStart, Is.GreaterThanOrEqualTo(0));
+        Assert.That(callbackEnd, Is.GreaterThan(callbackStart));
+        string callbackSource = attackStateSource.Substring(callbackStart, callbackEnd - callbackStart);
+
+        // 输入回调不再读取动画进度或直接换段，衔接时机完全交给 Update。
+        Assert.That(callbackSource, Does.Contain("actionBuffer.Record"));
+        Assert.That(callbackSource, Does.Not.Contain("ExecuteCombo"));
+        Assert.That(callbackSource, Does.Not.Contain("TryGetCurrentComboNormalizedTime"));
+        Assert.That(callbackSource, Does.Not.Contain("GetRecoveryStartNormalizedTime"));
+    }
+
+    [Test]
+    public void ComboContinuationIsArbitratedBeforeMovementCancel()
+    {
+        string attackStateSource = File.ReadAllText(ProjectPath(
+            "Assets/Scrips/Characters/Player/Statemachine/Movement/State/Attack/PlayerAttackState.cs"));
+        int updateStart = attackStateSource.IndexOf("public override void Update()");
+        int updateEnd = attackStateSource.IndexOf("public override void PhysicsUpdate()");
+        Assert.That(updateStart, Is.GreaterThanOrEqualTo(0));
+        Assert.That(updateEnd, Is.GreaterThan(updateStart));
+        string updateSource = attackStateSource.Substring(updateStart, updateEnd - updateStart);
+
+        int combatUpdateIndex = updateSource.IndexOf("combatExecutor.Update(normalizedTime)");
+        int continueComboIndex = updateSource.IndexOf("TryContinueCombo(normalizedTime)");
+        int cancelIndex = updateSource.IndexOf("TryCancelToMovement(normalizedTime)");
+        int finishIndex = updateSource.IndexOf("HandleAttackFinished()");
+
+        // 同帧顺序固定为：到时命中与 FX、攻击衔接、移动取消、动画自然结束。
+        Assert.That(combatUpdateIndex, Is.GreaterThanOrEqualTo(0));
+        Assert.That(continueComboIndex, Is.GreaterThan(combatUpdateIndex));
+        Assert.That(cancelIndex, Is.GreaterThan(continueComboIndex));
+        Assert.That(finishIndex, Is.GreaterThan(cancelIndex));
+    }
+
+    [Test]
+    public void DashCancelKeepsImmediateStateChangeWithoutBuffering()
+    {
+        string attackStateSource = File.ReadAllText(ProjectPath(
+            "Assets/Scrips/Characters/Player/Statemachine/Movement/State/Attack/PlayerAttackState.cs"));
+        int callbackStart = attackStateSource.IndexOf("protected override void OnDashStarted");
+        int callbackEnd = attackStateSource.IndexOf("protected override void OnJumpStarted");
+        Assert.That(callbackStart, Is.GreaterThanOrEqualTo(0));
+        Assert.That(callbackEnd, Is.GreaterThan(callbackStart));
+        string callbackSource = attackStateSource.Substring(callbackStart, callbackEnd - callbackStart);
+
+        // 冲刺不进入缓冲，仍在回调中即时切换状态。
+        Assert.That(callbackSource, Does.Contain("ChangeState(stateMachine.DashingState)"));
+        Assert.That(callbackSource, Does.Not.Contain("actionBuffer"));
+    }
+
+    [Test]
+    public void PlayerActionBufferStaysIndependentFromUnityAndStateMachine()
+    {
+        string bufferSource = File.ReadAllText(ProjectPath(
+            "Assets/Scrips/Characters/Player/Utilities/Input/PlayerActionBuffer.cs"));
+
+        // 缓冲器是纯数据服务：不引用 UnityEngine、输入系统、动画或状态机。
+        Assert.That(bufferSource, Does.Not.Contain("using UnityEngine"));
+        Assert.That(bufferSource, Does.Not.Contain("Time.time"));
+        Assert.That(bufferSource, Does.Not.Contain("Animator"));
+        Assert.That(bufferSource, Does.Not.Contain("stateMachine"));
+        Assert.That(bufferSource, Does.Not.Contain("InputAction"));
+    }
+
+    [Test]
+    public void PlayerAssetConfiguresPositiveAttackBufferDuration()
+    {
+        PlayerSO playerData = AssetDatabase.LoadAssetAtPath<PlayerSO>(
+            "Assets/ScriptableObjects/Characters/Player/Player.asset");
+        Assert.That(playerData, Is.Not.Null);
+
+        // 新增字段必须已写入实际资产：旧资产反序列化会得到 0，从而在进入攻击时抛异常。
+        Assert.That(playerData.AttackData.AttackBufferDuration, Is.GreaterThan(0f));
     }
 
     // 构造一份完全合法的两事件 ComboList，供各失败用例按需破坏单项字段。

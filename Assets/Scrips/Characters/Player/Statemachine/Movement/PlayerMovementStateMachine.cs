@@ -5,6 +5,7 @@ public class PlayerMovementStateMachine : StateMachine
     public Player Player { get; }
     public PlayerReusableData ReusableData { get; }
     public CombatExecutor CombatExecutor { get; }
+    public PlayerActionBuffer ActionBuffer { get; }
 
     public PlayerIdlingState IdlingState { get; }
     public PlayerDashingState DashingState { get; }
@@ -31,6 +32,8 @@ public class PlayerMovementStateMachine : StateMachine
         Player = player;
         ReusableData = new PlayerReusableData();
         CombatExecutor = new CombatExecutor(player.transform, player.Data.AttackData);
+        // 缓冲器必须先于各状态创建，攻击状态在构造时就会取得引用。
+        ActionBuffer = new PlayerActionBuffer();
 
         IdlingState = new PlayerIdlingState(this);
         DashingState = new PlayerDashingState(this);

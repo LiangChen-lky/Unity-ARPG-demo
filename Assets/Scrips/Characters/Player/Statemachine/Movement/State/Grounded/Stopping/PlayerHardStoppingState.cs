@@ -18,9 +18,6 @@ public class PlayerHardStoppingState : PlayerStoppingState
             GroundedData.StopData.HardMotionData,
             AnimationData.HardStoppingAnimationHash);
 
-        // TODO：MotionDriver PlayMode 验证通过后删除旧减速度配置。
-        // stateMachine.ReusableData.MovementDecelerationForce =
-        //     GroundedData.StopData.HardDecelerationForce;
         stateMachine.ReusableData.CurrentJumpForce = AirborneData.JumpData.StrongForce;
     }
 

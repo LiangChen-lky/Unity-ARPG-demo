@@ -106,9 +106,6 @@ MonoBehaviour:
       <SprintToRunTime>k__BackingField: 1
       <RunToWalkTime>k__BackingField: 0.5
     <StopData>k__BackingField:
-      <LightDecelerationForce>k__BackingField: 5
-      <MediumDecelerationForce>k__BackingField: 6.5
-      <HardDecelerationForce>k__BackingField: 5
       lightMotionData:
         clip: {fileID: 7400000, guid: cde077c8cf1c69b4e9b00a44c1d53347, type: 2}
         speedCurve:

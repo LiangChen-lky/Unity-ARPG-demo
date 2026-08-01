@@ -15,9 +15,6 @@ public class PlayerLightStoppingState : PlayerStoppingState
             GroundedData.StopData.LightMotionData,
             AnimationData.LightStoppingAnimationHash);
 
-        // TODO：MotionDriver PlayMode 验证通过后删除旧减速度配置。
-        // stateMachine.ReusableData.MovementDecelerationForce =
-        //     GroundedData.StopData.LightDecelerationForce;
         stateMachine.ReusableData.CurrentJumpForce = AirborneData.JumpData.WeakForce;
     }
 }

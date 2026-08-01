@@ -18,9 +18,6 @@ public class PlayerMediumStoppingState : PlayerStoppingState
             GroundedData.StopData.MediumMotionData,
             AnimationData.MediumStoppingAnimationHash);
 
-        // TODO：MotionDriver PlayMode 验证通过后删除旧减速度配置。
-        // stateMachine.ReusableData.MovementDecelerationForce =
-        //     GroundedData.StopData.MediumDecelerationForce;
         stateMachine.ReusableData.CurrentJumpForce = AirborneData.JumpData.WeakForce;
     }
 

@@ -48,14 +48,6 @@ public class PlayerStoppingState : PlayerGroundedState
         
         RotateTowardTargetRotation();
 
-        // TODO：MotionDriver PlayMode 验证通过后删除旧减速流程。
-        // if (!IsMovingHorizontally())
-        // {
-        //     return;
-        // }
-        //
-        // DecelerateHorizontally();
-
         motionDriver.PhysicsUpdate();
     }
 

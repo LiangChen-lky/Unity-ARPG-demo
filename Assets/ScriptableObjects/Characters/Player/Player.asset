@@ -123,6 +123,46 @@ MonoBehaviour:
         _Clip: {fileID: 7400000, guid: 5003d298b2d872d45ab0c05df09e7b2a, type: 2}
         _NormalizedStartTime: NaN
     <DashData>k__BackingField:
+      <ForwardAnimation>k__BackingField:
+        _FadeDuration: 0.1
+        _Speed: 1
+        _Events:
+          _NormalizedTimes:
+          - 0.375
+          _Callbacks: []
+          _Names: []
+        _Clip: {fileID: 7400000, guid: 83e482dc33341b5408ac992d317defe0, type: 2}
+        _NormalizedStartTime: NaN
+      <BackwardAnimation>k__BackingField:
+        _FadeDuration: 0.1
+        _Speed: 1
+        _Events:
+          _NormalizedTimes:
+          - 0.375
+          _Callbacks: []
+          _Names: []
+        _Clip: {fileID: 7400000, guid: 83e482dc33341b5408ac992d317defe0, type: 2}
+        _NormalizedStartTime: NaN
+      <LeftAnimation>k__BackingField:
+        _FadeDuration: 0.1
+        _Speed: 1
+        _Events:
+          _NormalizedTimes:
+          - 0.375
+          _Callbacks: []
+          _Names: []
+        _Clip: {fileID: 7400000, guid: 83e482dc33341b5408ac992d317defe0, type: 2}
+        _NormalizedStartTime: NaN
+      <RightAnimation>k__BackingField:
+        _FadeDuration: 0.1
+        _Speed: 1
+        _Events:
+          _NormalizedTimes:
+          - 0.375
+          _Callbacks: []
+          _Names: []
+        _Clip: {fileID: 7400000, guid: 83e482dc33341b5408ac992d317defe0, type: 2}
+        _NormalizedStartTime: NaN
       <SpeedModifier>k__BackingField: 2
       <TimeToBeConsideredConsecutive>k__BackingField: 1
       <ConsecutiveDashesLimitAmount>k__BackingField: 2

@@ -75,6 +75,27 @@ public class AnimationMotionDataTests
     }
 
     [Test]
+    public void ExistingPlayerUsesIndependentDashTransitionsWithTheSameClip()
+    {
+        PlayerSO playerData = AssetDatabase.LoadAssetAtPath<PlayerSO>(
+            "Assets/ScriptableObjects/Characters/Player/Player.asset");
+        PlayerDashData dashData = playerData.GroundedData.DashData;
+
+        Assert.That(dashData.ForwardAnimation, Is.Not.Null);
+        Assert.That(dashData.BackwardAnimation, Is.Not.Null);
+        Assert.That(dashData.LeftAnimation, Is.Not.Null);
+        Assert.That(dashData.RightAnimation, Is.Not.Null);
+
+        // 当前美术设计让四个方向共用 Dash Clip，但 Transition 必须保持独立配置。
+        Assert.That(dashData.BackwardAnimation, Is.Not.SameAs(dashData.ForwardAnimation));
+        Assert.That(dashData.LeftAnimation, Is.Not.SameAs(dashData.ForwardAnimation));
+        Assert.That(dashData.RightAnimation, Is.Not.SameAs(dashData.ForwardAnimation));
+        Assert.That(dashData.BackwardAnimation.Clip, Is.SameAs(dashData.ForwardAnimation.Clip));
+        Assert.That(dashData.LeftAnimation.Clip, Is.SameAs(dashData.ForwardAnimation.Clip));
+        Assert.That(dashData.RightAnimation.Clip, Is.SameAs(dashData.ForwardAnimation.Clip));
+    }
+
+    [Test]
     public void SerializedMotionDataCanBeReadThroughPublicAccessors()
     {
         ComboConfig comboConfig = ScriptableObject.CreateInstance<ComboConfig>();

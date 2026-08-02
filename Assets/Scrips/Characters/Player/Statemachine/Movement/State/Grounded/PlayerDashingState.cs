@@ -1,3 +1,4 @@
+using Animancer;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -14,6 +15,7 @@ public class PlayerDashingState : PlayerGroundedState
     private float startTime;
     private int consecutiveDashes;
     private bool shouldKeepRotate;
+    private AnimancerState dashingAnimationState;
     
     public PlayerDashingState(PlayerMovementStateMachine stateMachine) : base(stateMachine)
     {
@@ -30,9 +32,13 @@ public class PlayerDashingState : PlayerGroundedState
         stateMachine.ReusableData.CurrentJumpForce = AirborneData.JumpData.StrongForce;
 
         Vector3 dashDirection = GetDashDirection();
-        stateMachine.Player.Animator.CrossFade(
-            GetDashingAnimationHash(dashDirection),
-            0);
+
+        // TODO：Dash 的 Animancer 迁移验证通过后删除旧 Animator 播放代码。
+        // stateMachine.Player.Animator.CrossFade(
+        //     GetDashingAnimationHash(dashDirection),
+        //     0);
+
+        PlayDashingAnimation(dashDirection);
         
         SetRotationData(GroundedData.DashData.RotationData);
         
@@ -58,23 +64,27 @@ public class PlayerDashingState : PlayerGroundedState
 
     public override void Exit()
     {
+        // Dash 被其他状态提前打断时，旧动画不得在淡出结束后再次切换 HFSM。
+        dashingAnimationState.Events(this).OnEnd = null;
+        dashingAnimationState = null;
+
         base.Exit();
         
         SetBaseRotationData();
     }
 
-    public override void OnAnimationTransitionEvent()
-    {
-        base.OnAnimationTransitionEvent();
-        
-
-        if (stateMachine.ReusableData.MovementInput == Vector2.zero)
-        {
-            stateMachine.ChangeState(stateMachine.HardStoppingState);
-            return;
-        }
-        stateMachine.ChangeState(stateMachine.SprintingState);
-    }
+    // TODO：Dash 的 Animancer End Event 验证通过后删除旧动画事件处理代码。
+    // public override void OnAnimationTransitionEvent()
+    // {
+    //     base.OnAnimationTransitionEvent();
+    //
+    //     if (stateMachine.ReusableData.MovementInput == Vector2.zero)
+    //     {
+    //         stateMachine.ChangeState(stateMachine.HardStoppingState);
+    //         return;
+    //     }
+    //     stateMachine.ChangeState(stateMachine.SprintingState);
+    // }
 
     #endregion
 
@@ -106,23 +116,39 @@ public class PlayerDashingState : PlayerGroundedState
         stateMachine.Player.Rigidbody.linearVelocity = dashDirection * GetMovementSpeed();
     }
 
-    private int GetDashingAnimationHash(Vector3 dashDirection)
+    private void PlayDashingAnimation(Vector3 dashDirection)
+    {
+        ClipTransition transition = GetDashingAnimation(dashDirection);
+
+        // Dash 是可重复触发的一次性动作，每次进入状态都必须从头播放。
+        dashingAnimationState = stateMachine.Player.Animancer.Play(
+            transition,
+            transition.FadeDuration,
+            FadeMode.FromStart);
+        dashingAnimationState.Events(this).OnEnd = OnDashingAnimationEnded;
+    }
+
+    private ClipTransition GetDashingAnimation(Vector3 dashDirection)
     {
         DashDirection direction = GetDashDirectionRelativeToPlayer(dashDirection);
-        int directionalHash = direction switch
+        return direction switch
         {
-            DashDirection.Backward => AnimationData.DodgeBackwardAnimationHash,
-            DashDirection.Left => AnimationData.DodgeLeftAnimationHash,
-            DashDirection.Right => AnimationData.DodgeRightAnimationHash,
-            _ => AnimationData.DodgeForwardAnimationHash
+            DashDirection.Backward => GroundedData.DashData.BackwardAnimation,
+            DashDirection.Left => GroundedData.DashData.LeftAnimation,
+            DashDirection.Right => GroundedData.DashData.RightAnimation,
+            _ => GroundedData.DashData.ForwardAnimation
         };
+    }
 
-        if (stateMachine.Player.Animator.HasState(0, directionalHash))
+    private void OnDashingAnimationEnded()
+    {
+        if (stateMachine.ReusableData.MovementInput == Vector2.zero)
         {
-            return directionalHash;
+            stateMachine.ChangeState(stateMachine.HardStoppingState);
+            return;
         }
 
-        return AnimationData.DashingAnimationHash;
+        stateMachine.ChangeState(stateMachine.SprintingState);
     }
 
     private DashDirection GetDashDirectionRelativeToPlayer(Vector3 dashDirection)

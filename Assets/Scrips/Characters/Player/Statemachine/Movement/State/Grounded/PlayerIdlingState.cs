@@ -18,11 +18,6 @@ public class PlayerIdlingState : PlayerGroundedState
         stateMachine.ReusableData.MovementSpeedModifier = 0f;
         stateMachine.ReusableData.CurrentJumpForce = AirborneData.JumpData.StationaryForce;
 
-        // TODO：Animancer 渐进迁移验证通过后删除旧 Animator 播放代码。
-        // stateMachine.Player.Animator.CrossFadeInFixedTime(
-        //     AnimationData.IdlingAnimationHash,
-        //     AnimationData.FixedTransitionDuration);
-
         stateMachine.Player.Animancer.Play(GroundedData.IdleData.Animation);
     }
 

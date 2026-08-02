@@ -17,10 +17,6 @@ public class PlayerSprintingState : PlayerMovingState
     {
         base.Enter();
 
-        // TODO：Animancer 渐进迁移验证通过后删除旧 Animator 播放代码。
-        // stateMachine.Player.Animator.Play(
-        //     AnimationData.SprintingAnimationHash);
-
         stateMachine.Player.Animancer.Play(
             GroundedData.SprintData.Animation);
 

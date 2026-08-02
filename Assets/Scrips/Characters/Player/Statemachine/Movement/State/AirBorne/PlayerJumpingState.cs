@@ -18,9 +18,6 @@ public class PlayerJumpingState : PlayerAirborneState
 
         stateMachine.ReusableData.MovementSpeedModifier = 0f;
         SetRotationData(AirborneData.JumpData.RotationData);
-        
-        // TODO：Jump 的 Animancer 迁移验证通过后删除旧 Animator 播放代码。
-        // stateMachine.Player.Animator.Play(AnimationData.JumpingAnimationHash);
 
         ClipTransition jumpAnimation = AirborneData.JumpData.Animation;
         // Jump 到 Fall 仍由垂直速度决定，动画结束时间不参与 HFSM 切换。

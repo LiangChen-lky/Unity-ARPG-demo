@@ -21,11 +21,6 @@ public class PlayerFallingState : PlayerAirborneState
         playerPositionOnEnter = stateMachine.Player.transform.position;
         
         ResetVerticalVelocity();
-        
-        // TODO：Fall 的 Animancer 迁移验证通过后删除旧 Animator 播放代码。
-        // stateMachine.Player.Animator.CrossFade(
-        //     AnimationData.FallingAnimationHash,
-        //     AnimationData.NormalizedTransitionDuration);
 
         ClipTransition fallAnimation = fallData.Animation;
         // Fall 到 Landing 仍由接地检测决定，每次进入下落状态都从头播放动画。

@@ -12,10 +12,6 @@ public class PlayerHardLandingState : PlayerLandingState
         base.Enter();
 
         stateMachine.ReusableData.MovementSpeedModifier = 0f;
-        // TODO：HardLand 的 Animancer 迁移验证通过后删除旧 Animator 播放代码。
-        // stateMachine.Player.Animator.CrossFade(
-        //     AnimationData.HardLandingAnimationHash,
-        //     AnimationData.NormalizedTransitionDuration);
         PlayLandingAnimation(GroundedData.LandingData.HardAnimation, OnHardLandingAnimationEnded);
         stateMachine.Player.Input.PlayerActions.Movement.Disable();
 
@@ -42,24 +38,6 @@ public class PlayerHardLandingState : PlayerLandingState
 
         ResetVelocity();
     }
-
-    // TODO：HardLand 的 Animancer 迁移验证通过后删除旧动画事件回调。
-    // public override void OnAnimationTransitionEvent()
-    // {
-    //     base.OnAnimationTransitionEvent();
-    //
-    //     stateMachine.ChangeState(stateMachine.IdlingState);
-    // }
-
-    // protected override void OnMove()
-    // {
-    //     if (stateMachine.ReusableData.ShouldWalk)
-    //     {
-    //         return;
-    //     }
-
-    //     stateMachine.ChangeState(stateMachine.RunningState);
-    // }
 
     protected override void OnJumpStarted(InputAction.CallbackContext context)
     {

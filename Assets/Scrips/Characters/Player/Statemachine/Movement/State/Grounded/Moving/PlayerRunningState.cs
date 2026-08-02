@@ -19,11 +19,6 @@ public class PlayerRunningState : PlayerMovingState
         stateMachine.ReusableData.MovementSpeedModifier = GroundedData.RunData.SpeedModifier;
         stateMachine.ReusableData.CurrentJumpForce = AirborneData.JumpData.MediumForce;
 
-        // TODO：Animancer 渐进迁移验证通过后删除旧 Animator 播放代码。
-        // stateMachine.Player.Animator.CrossFade(
-        //     AnimationData.RunningAnimationHash,
-        //     0f);
-
         stateMachine.Player.Animancer.Play(
             GroundedData.RunData.Animation);
 

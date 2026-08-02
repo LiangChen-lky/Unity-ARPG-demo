@@ -44,21 +44,6 @@ public class PlayerStoppingState : PlayerGroundedState
         motionDriver.PhysicsUpdate();
     }
 
-    // public override void OnAnimationTransitionEvent()
-    // {
-    //     base.OnAnimationTransitionEvent();
-
-    //     stateMachine.ChangeState(stateMachine.IdlingState);
-    // }
-
-    // public override void OnAnimationExitEvent()
-    // {
-    //     base.OnAnimationExitEvent();
-
-    //     motionDriver.Stop();
-    //     ResetHorizontalVelocity();
-    // }
-
     #endregion
 
     #region Main Methods

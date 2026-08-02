@@ -33,11 +33,6 @@ public class PlayerDashingState : PlayerGroundedState
 
         Vector3 dashDirection = GetDashDirection();
 
-        // TODO：Dash 的 Animancer 迁移验证通过后删除旧 Animator 播放代码。
-        // stateMachine.Player.Animator.CrossFade(
-        //     GetDashingAnimationHash(dashDirection),
-        //     0);
-
         PlayDashingAnimation(dashDirection);
         
         SetRotationData(GroundedData.DashData.RotationData);
@@ -72,19 +67,6 @@ public class PlayerDashingState : PlayerGroundedState
         
         SetBaseRotationData();
     }
-
-    // TODO：Dash 的 Animancer End Event 验证通过后删除旧动画事件处理代码。
-    // public override void OnAnimationTransitionEvent()
-    // {
-    //     base.OnAnimationTransitionEvent();
-    //
-    //     if (stateMachine.ReusableData.MovementInput == Vector2.zero)
-    //     {
-    //         stateMachine.ChangeState(stateMachine.HardStoppingState);
-    //         return;
-    //     }
-    //     stateMachine.ChangeState(stateMachine.SprintingState);
-    // }
 
     #endregion
 

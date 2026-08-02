@@ -45,23 +45,6 @@ public class Player : MonoBehaviour
         if (Camera.main != null) MainCameraTransform = Camera.main.transform;
 
         movementStateMachine = new PlayerMovementStateMachine(this);
-        RegisterAnimationEvents();
-    }
-
-    /// <summary>
-    /// 将 Animancer 的通用命名事件绑定到现有状态机入口，具体行为仍由当前状态决定。
-    /// </summary>
-    private void RegisterAnimationEvents()
-    {
-        Animancer.Events.AddNew(
-            PlayerAnimationEventNames.Enter,
-            OnMovementStateAnimationEnterEvent);
-        Animancer.Events.AddNew(
-            PlayerAnimationEventNames.Exit,
-            OnMovementStateAnimationExitEvent);
-        Animancer.Events.AddNew(
-            PlayerAnimationEventNames.Transition,
-            OnMovementStateAnimationTransitionEvent);
     }
 
     private void OnValidate()

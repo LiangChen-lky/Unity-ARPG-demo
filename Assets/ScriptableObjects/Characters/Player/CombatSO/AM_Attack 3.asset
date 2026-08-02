@@ -12,11 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4559e1533c874574ba25724691fb01a4, type: 3}
   m_Name: AM_Attack 3
   m_EditorClassIdentifier: 
-  ComboName: Base Layer.Attack.AM_Attack03
-  AttackClip: {fileID: 7400000, guid: 8e80c27fb1473764e88731ad880d24a2, type: 2}
   motionData:
     animation:
-      _FadeDuration: 0.25
+      _FadeDuration: 0.1555
       _Speed: 1
       _Events:
         _NormalizedTimes: []

@@ -2670,7 +2670,8 @@ MonoBehaviour:
         _FadeDuration: 0.1
         _Speed: 1
         _Events:
-          _NormalizedTimes: []
+          _NormalizedTimes:
+          - 0.46803653
           _Callbacks: []
           _Names: []
         _Clip: {fileID: 7400000, guid: 8143c4f3114e3274c85a8b2970be166d, type: 2}
@@ -2680,7 +2681,8 @@ MonoBehaviour:
         _FadeDuration: 0.1
         _Speed: 1
         _Events:
-          _NormalizedTimes: []
+          _NormalizedTimes:
+          - 0.23972602
           _Callbacks: []
           _Names: []
         _Clip: {fileID: 7400000, guid: 738ea400753b9a145a9c32eeb302d1d5, type: 2}

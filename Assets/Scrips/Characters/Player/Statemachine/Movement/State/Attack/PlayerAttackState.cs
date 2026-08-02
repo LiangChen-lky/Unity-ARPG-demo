@@ -1,4 +1,5 @@
 using System;
+using Animancer;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -13,13 +14,10 @@ public class PlayerAttackState : PlayerGroundedState
     private readonly MotionDriver motionDriver;
     private readonly PlayerActionBuffer actionBuffer;
 
-    // 连击段切换使用固定秒数过渡，避免散落的匿名数值难以追溯。
-    private const float ComboTransitionDuration = 0.1555f;
-
     // 当前正在播放的线性连招段；下一段固定为数组中的后一项。
     private int currentComboIndex;
-    // 运动采样同时支持 Animator 过渡期，因此缓存完整状态路径 Hash 匹配下一状态。
-    private int currentComboStateHash;
+    // 位移、命中与取消共用这一个播放状态作为唯一时间源，不再依赖 Animator 的当前状态查询。
+    private AnimancerState currentComboAnimationState;
 
     public PlayerAttackState(PlayerMovementStateMachine stateMachine) : base(stateMachine)
     {
@@ -51,7 +49,7 @@ public class PlayerAttackState : PlayerGroundedState
         // 冲刺取消、移动取消与自然结束都经由此处，统一清除尚未消费的攻击输入。
         actionBuffer.Clear(PlayerActionType.Attack);
         currentComboIndex = 0;
-        currentComboStateHash = 0;
+        currentComboAnimationState = null;
         combatExecutor.EndAttack();
         stateMachine.Player.WeaponController?.CancelAttack();
         base.Exit();
@@ -61,14 +59,10 @@ public class PlayerAttackState : PlayerGroundedState
     {
         base.Update();
 
-        UpdateMotionTime();
+        // 位移曲线、命中判定与取消窗口共用同一份播放进度，避免多个时间源在同一帧产生偏差。
+        float normalizedTime = currentComboAnimationState.NormalizedTime;
+        motionDriver.SetNormalizedTime(normalizedTime);
 
-        if (!TryGetCurrentComboNormalizedTime(out float normalizedTime))
-        {
-            return;
-        }
-
-        // 仅确认当前 Animator 已切到本段后，才允许执行本段命中和攻击 FX。
         combatExecutor.Update(normalizedTime);
 
         // 攻击衔接优先于同帧的移动取消：缓存有效时即使按住移动也继续连招。
@@ -82,6 +76,8 @@ public class PlayerAttackState : PlayerGroundedState
             return;
         }
 
+        // 攻击段的同帧仲裁顺序固定，因此不使用 Animancer 的 OnEnd 回调切状态：
+        // 回调可能早于本帧 Update 触发，导致最后一帧应结算的命中与 FX 被整体跳过。
         if (normalizedTime >= 1f)
         {
             HandleAttackFinished();
@@ -120,59 +116,6 @@ public class PlayerAttackState : PlayerGroundedState
         }
 
         comboList.ValidateConfiguration();
-
-        // 数据层校验通过后，再确认每段 ComboName 对应的 Animator 状态确实存在。
-        // 缺失属于配置错误，必须在 Enter 阶段直接失败，运行中不做超时或回退 Idle 等兜底。
-        Animator animator = stateMachine.Player.Animator;
-        for (int comboIndex = 0; comboIndex < comboList.ComboCount; comboIndex++)
-        {
-            string statePath = comboList.GetComboName(comboIndex);
-            if (!animator.HasState(0, Animator.StringToHash(statePath)))
-            {
-                throw new InvalidOperationException(
-                    $"PlayerAttackState 第 {comboIndex + 1} 段招式的 ComboName（{statePath}）" +
-                    "在 Animator 第 0 层不存在，请确认配置的是完整状态路径（如 Base Layer.Attack.AM_Attack01）。");
-            }
-        }
-    }
-
-    // 过渡期间 GetCurrentAnimatorStateInfo 仍可能指向旧段，不能把旧进度用于新段事件。
-    private bool TryGetCurrentComboNormalizedTime(out float normalizedTime)
-    {
-        Animator animator = stateMachine.Player.Animator;
-        if (animator.IsInTransition(0))
-        {
-            normalizedTime = 0f;
-            return false;
-        }
-
-        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
-        // 保留状态名比对：这是 CrossFade 期间的时序守卫，不是防御性配置校验。
-        string currentComboName = attackData.CurrentComboList.GetComboName(currentComboIndex);
-        if (!stateInfo.IsName(currentComboName))
-        {
-            normalizedTime = 0f;
-            return false;
-        }
-
-        normalizedTime = stateInfo.normalizedTime;
-        return true;
-    }
-
-    /// <summary>
-    /// 运动曲线需要覆盖 CrossFade 开头，因此过渡期读取下一状态；命中与取消仍沿用原来的严格时序。
-    /// </summary>
-    private void UpdateMotionTime()
-    {
-        Animator animator = stateMachine.Player.Animator;
-        AnimatorStateInfo stateInfo = animator.IsInTransition(0)
-            ? animator.GetNextAnimatorStateInfo(0)
-            : animator.GetCurrentAnimatorStateInfo(0);
-
-        if (stateInfo.fullPathHash == currentComboStateHash)
-        {
-            motionDriver.SetNormalizedTime(stateInfo.normalizedTime);
-        }
     }
 
     private void ExecuteCombo(int comboIndex)
@@ -182,13 +125,13 @@ public class PlayerAttackState : PlayerGroundedState
 
         ComboConfig comboConfig =
             attackData.CurrentComboList.ComboConfigs[currentComboIndex];
-        currentComboStateHash = Animator.StringToHash(comboConfig.ComboName);
 
-        stateMachine.Player.Animator.CrossFadeInFixedTime(
-            comboConfig.ComboName,
-            ComboTransitionDuration,
-            0,
-            0);
+        // 连招可以重复触发同一段（例如打断后重新起手），必须强制从头播放而不是接续上次进度。
+        ClipTransition transition = comboConfig.MotionData.Animation;
+        currentComboAnimationState = stateMachine.Player.Animancer.Play(
+            transition,
+            transition.FadeDuration,
+            FadeMode.FromStart);
 
         // 每段 Combo 锁定开始时的角色前向，运行过程中不根据实时 WASD 改变轨迹。
         Vector3 motionDirection =

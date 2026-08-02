@@ -45,7 +45,7 @@ public class AnimationMotionBakerTests
     {
         ComboConfig comboConfig = ScriptableObject.CreateInstance<ComboConfig>();
         AnimationClip clip = BuildClip("Combo");
-        SetComboClips(comboConfig, clip, clip);
+        SetComboClip(comboConfig, clip);
 
         List<AnimationMotionBakeTarget> targets =
             AnimationMotionTargetScanner.Scan(
@@ -70,8 +70,8 @@ public class AnimationMotionBakerTests
         AnimationClip firstClip = BuildClip("First");
         AnimationClip secondClip = BuildClip("Second");
 
-        SetComboClips(firstCombo, firstClip, firstClip);
-        SetComboClips(secondCombo, secondClip, secondClip);
+        SetComboClip(firstCombo, firstClip);
+        SetComboClip(secondCombo, secondClip);
         SetComboList(comboList, firstCombo, secondCombo);
 
         List<AnimationMotionBakeTarget> targets =
@@ -154,30 +154,6 @@ public class AnimationMotionBakerTests
         Assert.That(result.SpeedCurve.Evaluate(0.5f), Is.EqualTo(-1f).Within(0.001f));
     }
 
-    // ---- 校验：Combo 仍由 AttackClip 播放时，MotionData 不能引用另一段动画 ----
-
-    [Test]
-    public void ValidatorRejectsDifferentComboClipSources()
-    {
-        ComboConfig comboConfig = ScriptableObject.CreateInstance<ComboConfig>();
-        AnimationClip attackClip = BuildClip("Attack");
-        AnimationClip motionClip = BuildClip("Motion");
-        SetComboClips(comboConfig, attackClip, motionClip);
-
-        AnimationMotionBakeTarget target =
-            AnimationMotionTargetScanner.Scan(
-                new List<ScriptableObject> { comboConfig })[0];
-        List<string> errors =
-            AnimationMotionBakeValidator.ValidateTarget(target);
-
-        Assert.That(errors, Has.Count.EqualTo(1));
-        Assert.That(errors[0], Does.Contain("MotionData.Clip"));
-
-        Object.DestroyImmediate(attackClip);
-        Object.DestroyImmediate(motionClip);
-        Object.DestroyImmediate(comboConfig);
-    }
-
     // ---- 写回：验证扫描所得 PropertyPath 能把曲线写回内嵌数据，同时保持运行时访问器只读 ----
 
     [Test]
@@ -185,7 +161,7 @@ public class AnimationMotionBakerTests
     {
         ComboConfig comboConfig = ScriptableObject.CreateInstance<ComboConfig>();
         AnimationClip clip = BuildClip("Write");
-        SetComboClips(comboConfig, clip, clip);
+        SetComboClip(comboConfig, clip);
 
         AnimationMotionBakeTarget target =
             AnimationMotionTargetScanner.Scan(
@@ -297,19 +273,14 @@ public class AnimationMotionBakerTests
     }
 
     // 通过 SerializedProperty 配置内嵌 MotionData.Animation.Clip，模拟烘焙器面对的真实序列化结构。
-    private static void SetComboClips(
-        ComboConfig comboConfig,
-        AnimationClip attackClip,
-        AnimationClip motionClip)
+    private static void SetComboClip(ComboConfig comboConfig, AnimationClip clip)
     {
-        comboConfig.AttackClip = attackClip;
-
         SerializedObject serializedCombo = new SerializedObject(comboConfig);
         SerializedProperty motionData = serializedCombo.FindProperty("motionData");
         motionData
             .FindPropertyRelative("animation")
             .FindPropertyRelative(ClipTransition.ClipFieldName)
-            .objectReferenceValue = motionClip;
+            .objectReferenceValue = clip;
         serializedCombo.ApplyModifiedPropertiesWithoutUndo();
     }
 

@@ -37,12 +37,6 @@ public class ComboList : ScriptableObject //招式表
     // 数量不存在"取不到"的正常情况，直接暴露只读属性。
     public int ComboCount => ComboConfigs.Length;
 
-    // 当前段已由 ValidateConfiguration 保证存在，直接按索引读取，越界应暴露为错误。
-    public string GetComboName(int comboIndex)
-    {
-        return ComboConfigs[comboIndex].ComboName;
-    }
-
     // 命中盒与交互配置一一对应且已校验；缺失应直接暴露，而非静默不造成伤害。
     public ComboInteractionConfig GetComboInteractionConfig(int comboIndex, int eventIndex)
     {

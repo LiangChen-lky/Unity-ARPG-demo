@@ -4,14 +4,9 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "ComboConfig", menuName = "ScriptableObject/Combat/ComboConfig")]
 public class ComboConfig : ScriptableObject
 {
-    [Header("基础数据")]
-    // Animator 第 0 层的完整状态路径（如 Base Layer.Attack.AM_Attack01），不是动画 Clip 名。
-    // CrossFadeInFixedTime、AnimatorStateInfo.IsName 与进入攻击前的 Animator.HasState 校验都依赖它。
-    public string ComboName;
-    public AnimationClip AttackClip;
-
     [Header("动画运动数据")]
-    // ClipTransition 已成为运动数据的动画来源；AttackClip 等攻击状态迁移后再移除。
+    // ClipTransition 同时是运行时播放源与位移烘焙源：Animancer 直接播放它，帧号换算也按它的 Clip 计算，
+    // 因此不再单独保存 Animator 状态路径与攻击 Clip，避免同一段动画出现两个可能不一致的来源。
     [SerializeField] private AnimationMotionData motionData = new AnimationMotionData();
     public AnimationMotionData MotionData => motionData;
 
@@ -37,16 +32,17 @@ public class ComboConfig : ScriptableObject
     // 开启后，本段从进入攻击状态起全流程允许冲刺取消，不受 RecoveryStartFrame 限制。
     public bool CanDashCancel;
 
-    // 命中配置使用帧号编辑，这里统一换算为 Animator 使用的归一化进度。
+    // 命中配置使用帧号编辑，这里统一换算为播放进度使用的归一化时间。
     public float GetAttackDetectionNormalizedTime(AttackDetectionConfig detectionConfig)
     {
-        return detectionConfig.GetNormalizedStartTime(AttackClip);
+        return detectionConfig.GetNormalizedStartTime(MotionData.Clip);
     }
 
     // 后摇起始帧沿用命中检测的帧号换算规则，统一由攻击状态读取动画归一化进度。
     public float GetRecoveryStartNormalizedTime()
     {
-        return (RecoveryStartFrame - 1) / (AttackClip.length * AttackClip.frameRate);
+        AnimationClip clip = MotionData.Clip;
+        return (RecoveryStartFrame - 1) / (clip.length * clip.frameRate);
     }
 
     /// <summary>
@@ -55,34 +51,31 @@ public class ComboConfig : ScriptableObject
     /// </summary>
     public void ValidateConfiguration(int comboIndex, string comboListName)
     {
-        string comboPrefix = $"ComboList \"{comboListName}\" 第 {comboIndex + 1} 段招式";
+        // 段名取资产自身名字：删除 ComboName 后它是唯一稳定的定位信息，且 Clip 缺失时仍然可用。
+        string comboPrefix = $"ComboList \"{comboListName}\" 第 {comboIndex + 1} 段招式（{name}）";
 
-        // 段名缺失属于无法定位的配置错误，必须在最外层拦截。
-        if (string.IsNullOrEmpty(ComboName))
+        // 没有动画片段时，Animancer 无从播放、帧号也无法换算为归一化进度，后续校验全部无法继续。
+        // 这一条同时是进入攻击状态前的唯一前置守卫，缺失必须在这里暴露为配置错误而不是播放时的空引用。
+        AnimationClip clip = MotionData.Clip;
+        if (clip == null)
         {
-            throw new InvalidOperationException($"{comboPrefix}：ComboName 不能为空。");
-        }
-
-        // 没有动画片段时，帧号无法换算为归一化进度，后续校验也无法继续。
-        if (AttackClip == null)
-        {
-            throw new InvalidOperationException($"{comboPrefix}（{ComboName}）：AttackClip 不能为 null。");
+            throw new InvalidOperationException($"{comboPrefix}：MotionData.Clip 不能为 null。");
         }
 
         // 攻击状态以动画进度达到 1 作为自然结束条件，循环动画会破坏该时序语义。
-        if (AttackClip.isLooping)
+        if (clip.isLooping)
         {
             throw new InvalidOperationException(
-                $"{comboPrefix}（{ComboName}）：AttackClip 必须关闭循环播放。");
+                $"{comboPrefix}：MotionData.Clip 必须关闭循环播放。");
         }
 
         // 动画长度或采样率为 0 时换算归一化进度会除零，属于无效动画配置。
-        float clipFrameSpan = AttackClip.length * AttackClip.frameRate;
-        if (AttackClip.length <= 0f || AttackClip.frameRate <= 0f || clipFrameSpan < 1f)
+        float clipFrameSpan = clip.length * clip.frameRate;
+        if (clip.length <= 0f || clip.frameRate <= 0f || clipFrameSpan < 1f)
         {
             throw new InvalidOperationException(
-                $"{comboPrefix}（{ComboName}）：AttackClip 的 length（{AttackClip.length}）" +
-                $"与 frameRate（{AttackClip.frameRate}）必须都大于 0，" +
+                $"{comboPrefix}：MotionData.Clip 的 length（{clip.length}）" +
+                $"与 frameRate（{clip.frameRate}）必须都大于 0，" +
                 $"且换算出的总帧数（{clipFrameSpan}）必须不小于 1。");
         }
 
@@ -91,19 +84,19 @@ public class ComboConfig : ScriptableObject
         if (FXConfig == null)
         {
             throw new InvalidOperationException(
-                $"{comboPrefix}（{ComboName}）：FXConfig 不能为 null；没有攻击特效时请配置为空数组。");
+                $"{comboPrefix}：FXConfig 不能为 null；没有攻击特效时请配置为空数组。");
         }
 
         if (SFXConfig == null)
         {
             throw new InvalidOperationException(
-                $"{comboPrefix}（{ComboName}）：SFXConfig 不能为 null；没有攻击音效时请配置为空数组。");
+                $"{comboPrefix}：SFXConfig 不能为 null；没有攻击音效时请配置为空数组。");
         }
 
         if (AttackFeedbackConfig == null)
         {
             throw new InvalidOperationException(
-                $"{comboPrefix}（{ComboName}）：AttackFeedbackConfig 不能为 null；没有打击感反馈时请配置为空数组。");
+                $"{comboPrefix}：AttackFeedbackConfig 不能为 null；没有打击感反馈时请配置为空数组。");
         }
 
         int lastTriggerableFrame = Mathf.FloorToInt(clipFrameSpan);
@@ -113,7 +106,7 @@ public class ComboConfig : ScriptableObject
         if (AttackDetectionConfig == null || InteractionConfig == null)
         {
             throw new InvalidOperationException(
-                $"{comboPrefix}（{ComboName}）：AttackDetectionConfig 与 InteractionConfig 必须同时存在或同时为空，" +
+                $"{comboPrefix}：AttackDetectionConfig 与 InteractionConfig 必须同时存在或同时为空，" +
                 $"当前 AttackDetectionConfig 为 {(AttackDetectionConfig == null ? "null" : $"长度 {AttackDetectionConfig.Length}")}，" +
                 $"InteractionConfig 为 {(InteractionConfig == null ? "null" : $"长度 {InteractionConfig.Length}")}。");
         }
@@ -128,7 +121,7 @@ public class ComboConfig : ScriptableObject
         if (AttackDetectionConfig.Length != InteractionConfig.Length)
         {
             throw new InvalidOperationException(
-                $"{comboPrefix}（{ComboName}）：AttackDetectionConfig 长度（{AttackDetectionConfig.Length}）" +
+                $"{comboPrefix}：AttackDetectionConfig 长度（{AttackDetectionConfig.Length}）" +
                 $"与 InteractionConfig 长度（{InteractionConfig.Length}）必须一致。");
         }
 
@@ -148,13 +141,13 @@ public class ComboConfig : ScriptableObject
         if (RecoveryStartFrame < 1 || RecoveryStartFrame > lastTriggerableFrame)
         {
             throw new InvalidOperationException(
-                $"{comboPrefix}（{ComboName}）：RecoveryStartFrame（{RecoveryStartFrame}）必须位于 1 到 {lastTriggerableFrame} 之间。");
+                $"{comboPrefix}：RecoveryStartFrame（{RecoveryStartFrame}）必须位于 1 到 {lastTriggerableFrame} 之间。");
         }
 
         if (RecoveryStartFrame < lastHitFrame)
         {
             throw new InvalidOperationException(
-                $"{comboPrefix}（{ComboName}）：RecoveryStartFrame（{RecoveryStartFrame}）不能早于最后一次命中帧（{lastHitFrame}）。");
+                $"{comboPrefix}：RecoveryStartFrame（{RecoveryStartFrame}）不能早于最后一次命中帧（{lastHitFrame}）。");
         }
     }
 
@@ -195,7 +188,7 @@ public class ComboConfig : ScriptableObject
         if (detectionConfig.StartFrame > lastTriggerableFrame)
         {
             throw new InvalidOperationException(
-                $"{eventPrefix}：StartFrame（{detectionConfig.StartFrame}）不得超过 AttackClip 可触发的最后一帧（{lastTriggerableFrame}），" +
+                $"{eventPrefix}：StartFrame（{detectionConfig.StartFrame}）不得超过 MotionData.Clip 可触发的最后一帧（{lastTriggerableFrame}），" +
                 $"否则换算出的归一化时间不严格小于 1。");
         }
 
@@ -251,9 +244,9 @@ public class AttackDetectionConfig
     public Vector3 Scale;
 
     // 以动画实际长度和采样率换算，保证不同帧数的招式都能直接按帧配置。
-    public float GetNormalizedStartTime(AnimationClip attackClip)
+    public float GetNormalizedStartTime(AnimationClip clip)
     {
-        return (StartFrame - 1) / (attackClip.length * attackClip.frameRate);
+        return (StartFrame - 1) / (clip.length * clip.frameRate);
     }
 }
 

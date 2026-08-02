@@ -118,16 +118,6 @@ internal static class AnimationMotionBakeValidator
             errors.Add($"{target.DisplayName}：Clip {clip.name} 的采样率必须大于 0。");
         }
 
-        // 双来源一致性：过渡阶段 Combo 实际播放的是 ComboConfig.AttackClip，而位移是按 MotionData.Clip 烘焙的。
-        // 两者指向不同动画时，运行时会用 A 的曲线驱动 B 的播放，位移与动作脱节且难以排查，故在此提前拦截。
-        if (target.Owner is ComboConfig comboConfig &&
-            target.PropertyPath == "motionData" &&
-            comboConfig.AttackClip != clip)
-        {
-            errors.Add(
-                $"{target.DisplayName}：MotionData.Clip 必须与 AttackClip 引用同一个动画。");
-        }
-
         return errors;
     }
 

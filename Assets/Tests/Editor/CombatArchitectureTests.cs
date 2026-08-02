@@ -1,6 +1,7 @@
 using System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using Animancer;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -141,7 +142,7 @@ public class CombatArchitectureTests
         ComboConfig comboConfig = ScriptableObject.CreateInstance<ComboConfig>();
         AttackDetectionConfig detectionConfig = new AttackDetectionConfig { StartFrame = 31 };
 
-        comboConfig.AttackClip = attackClip;
+        SetComboMotionClip(comboConfig, attackClip);
 
         // 第 31 帧对应 30 个帧间隔，30 FPS、3 秒动画的归一化进度应为三分之一。
         Assert.That(
@@ -469,28 +470,17 @@ public class CombatArchitectureTests
     }
 
     [Test]
-    public void MissingAttackClipFailsValidation()
+    public void MissingMotionClipFailsValidation()
     {
         ComboList comboList = BuildValidComboList("MissingClipComboList");
-        comboList.ComboConfigs[0].AttackClip = null;
+        AnimationClip clip = comboList.ComboConfigs[0].MotionData.Clip;
+        SetComboMotionClip(comboList.ComboConfigs[0], null);
 
         var exception = Assert.Throws<System.InvalidOperationException>(() => comboList.ValidateConfiguration());
         Assert.That(exception.Message, Does.Contain("MissingClipComboList"));
-        Assert.That(exception.Message, Does.Contain("AttackClip 不能为 null"));
+        Assert.That(exception.Message, Does.Contain("MotionData.Clip 不能为 null"));
 
-        DestroyComboListAssets(comboList);
-        Object.DestroyImmediate(comboList);
-    }
-
-    [Test]
-    public void MissingComboNameFailsValidation()
-    {
-        ComboList comboList = BuildValidComboList("MissingNameComboList");
-        comboList.ComboConfigs[0].ComboName = "";
-
-        var exception = Assert.Throws<System.InvalidOperationException>(() => comboList.ValidateConfiguration());
-        Assert.That(exception.Message, Does.Contain("ComboName 不能为空"));
-
+        Object.DestroyImmediate(clip);
         DestroyComboListAssets(comboList);
         Object.DestroyImmediate(comboList);
     }
@@ -772,16 +762,16 @@ public class CombatArchitectureTests
     }
 
     [Test]
-    public void LoopingAttackClipFailsValidation()
+    public void LoopingMotionClipFailsValidation()
     {
         ComboList comboList = BuildValidComboList("LoopingAttackClipList");
-        AnimationClip clip = comboList.ComboConfigs[0].AttackClip;
+        AnimationClip clip = comboList.ComboConfigs[0].MotionData.Clip;
         AnimationClipSettings settings = AnimationUtility.GetAnimationClipSettings(clip);
         settings.loopTime = true;
         AnimationUtility.SetAnimationClipSettings(clip, settings);
 
         var exception = Assert.Throws<System.InvalidOperationException>(() => comboList.ValidateConfiguration());
-        Assert.That(exception.Message, Does.Contain("AttackClip 必须关闭循环播放"));
+        Assert.That(exception.Message, Does.Contain("MotionData.Clip 必须关闭循环播放"));
 
         DestroyComboListAssets(comboList);
         Object.DestroyImmediate(comboList);
@@ -824,7 +814,7 @@ public class CombatArchitectureTests
     }
 
     [Test]
-    public void CombatEventsRunOnlyAfterCurrentComboStateGuard()
+    public void CombatEventsReadSingleAnimancerTimeSource()
     {
         string attackStateSource = File.ReadAllText(ProjectPath(
             "Assets/Scrips/Characters/Player/Statemachine/Movement/State/Attack/PlayerAttackState.cs"));
@@ -834,13 +824,15 @@ public class CombatArchitectureTests
         Assert.That(updateEnd, Is.GreaterThan(updateStart));
         string updateSource = attackStateSource.Substring(updateStart, updateEnd - updateStart);
 
-        int comboStateGuardIndex = updateSource.IndexOf(
-            "TryGetCurrentComboNormalizedTime(out float normalizedTime)");
+        int timeSourceIndex = updateSource.IndexOf(
+            "float normalizedTime = currentComboAnimationState.NormalizedTime");
+        int motionTimeIndex = updateSource.IndexOf("motionDriver.SetNormalizedTime(normalizedTime)");
         int combatUpdateIndex = updateSource.IndexOf("combatExecutor.Update(normalizedTime)");
 
-        // 比较 Update 内的实际调用顺序，不依赖守卫方法在源码文件中的物理位置。
-        Assert.That(comboStateGuardIndex, Is.GreaterThanOrEqualTo(0));
-        Assert.That(combatUpdateIndex, Is.GreaterThan(comboStateGuardIndex));
+        // 位移曲线与命中判定必须取自同一份播放进度，避免两个时间源在同一帧产生偏差。
+        Assert.That(timeSourceIndex, Is.GreaterThanOrEqualTo(0));
+        Assert.That(motionTimeIndex, Is.GreaterThan(timeSourceIndex));
+        Assert.That(combatUpdateIndex, Is.GreaterThan(timeSourceIndex));
     }
 
     [Test]
@@ -886,12 +878,17 @@ public class CombatArchitectureTests
     public void ComboListRuntimeAccessorsDropRedundantTryFallbacks()
     {
         // 已校验数据的直接读取不再暴露静默兜底接口，缺失应暴露为错误而非静默失效。
-        Assert.That(typeof(ComboList).GetMethod("TryGetComboName"), Is.Null);
         Assert.That(typeof(ComboList).GetMethod("TryGetComboInteractionConfig"), Is.Null);
         Assert.That(typeof(ComboList).GetMethod("TryGetComboConfigsCount"), Is.Null);
-        Assert.That(typeof(ComboList).GetMethod("GetComboName"), Is.Not.Null);
         Assert.That(typeof(ComboList).GetMethod("GetComboInteractionConfig"), Is.Not.Null);
         Assert.That(typeof(ComboList).GetProperty("ComboCount"), Is.Not.Null);
+
+        // Animancer 直接播放 MotionData.Animation，Animator 状态路径不再是连招数据的一部分，
+        // 因此段名访问器整体移除，而不是保留一个没有消费者的只读接口。
+        Assert.That(typeof(ComboList).GetMethod("TryGetComboName"), Is.Null);
+        Assert.That(typeof(ComboList).GetMethod("GetComboName"), Is.Null);
+        Assert.That(typeof(ComboConfig).GetField("ComboName"), Is.Null);
+        Assert.That(typeof(ComboConfig).GetField("AttackClip"), Is.Null);
 
         // 事件游标走到数组末尾返回 null 是正常结束信号，这些遍历接口必须保留。
         Assert.That(typeof(ComboList).GetMethod("TryGetAttackDetectionConfig"), Is.Not.Null);
@@ -899,54 +896,52 @@ public class CombatArchitectureTests
     }
 
     [Test]
-    public void AttackStateValidatesAnimatorStatePathsAfterDataLayerValidation()
+    public void AttackStatePlaysComboThroughAnimancerFromStart()
     {
         string attackStateSource = File.ReadAllText(ProjectPath(
             "Assets/Scrips/Characters/Player/Statemachine/Movement/State/Attack/PlayerAttackState.cs"));
 
-        // 先跑数据层校验，再用 Animator.HasState 确认状态路径存在，二者顺序不能颠倒。
-        int dataValidationIndex = attackStateSource.IndexOf("comboList.ValidateConfiguration()");
-        int hasStateIndex = attackStateSource.IndexOf("animator.HasState(0, Animator.StringToHash");
+        // 攻击段改由 Animancer 播放 MotionData.Animation，Animator 播放与状态查询接口不得回流。
+        Assert.That(attackStateSource, Does.Contain("stateMachine.Player.Animancer.Play("));
+        Assert.That(attackStateSource, Does.Contain("comboConfig.MotionData.Animation"));
+        Assert.That(attackStateSource, Does.Not.Contain("CrossFadeInFixedTime"));
+        Assert.That(attackStateSource, Does.Not.Contain("GetCurrentAnimatorStateInfo"));
+        Assert.That(attackStateSource, Does.Not.Contain("GetNextAnimatorStateInfo"));
 
-        Assert.That(dataValidationIndex, Is.GreaterThanOrEqualTo(0));
-        Assert.That(hasStateIndex, Is.GreaterThan(dataValidationIndex));
+        // 同一段可被打断后重新起手，必须强制从头播放而不是接续上次保存的进度。
+        Assert.That(attackStateSource, Does.Contain("FadeMode.FromStart"));
     }
 
     [Test]
-    public void ConfiguredComboPathsExistInPlayerAnimatorController()
+    public void AttackStateEndsOnExplicitProgressCheckInsteadOfAnimancerEndEvent()
     {
-        RuntimeAnimatorController controller = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(
-            "Assets/Animations/Characters/Player/PlayerAnimatorController.controller");
-        ComboList comboList = AssetDatabase.LoadAssetAtPath<ComboList>(
-            "Assets/ScriptableObjects/Characters/Player/CombatSO/AM_ComboList.asset");
-        Assert.That(controller, Is.Not.Null);
-        Assert.That(comboList, Is.Not.Null);
+        string attackStateSource = File.ReadAllText(ProjectPath(
+            "Assets/Scrips/Characters/Player/Statemachine/Movement/State/Attack/PlayerAttackState.cs"));
 
-        GameObject animatorOwner = new GameObject("ComboPathValidationAnimator");
-        Animator animator = animatorOwner.AddComponent<Animator>();
-        animator.runtimeAnimatorController = controller;
+        // 动画结束回调可能早于本帧 Update 触发，会跳过最后一帧应结算的命中与 FX，
+        // 因此攻击段结束固定走 Update 内的显式进度判定，与 Dash、Landing 的处理方式不同。
+        Assert.That(attackStateSource, Does.Not.Contain("Events(this)"));
+        Assert.That(attackStateSource, Does.Contain("if (normalizedTime >= 1f)"));
+    }
 
-        try
-        {
-            // 实际连招表配置的每段完整路径都必须在 Animator 第 0 层存在。
-            for (int comboIndex = 0; comboIndex < comboList.ComboCount; comboIndex++)
-            {
-                string statePath = comboList.GetComboName(comboIndex);
-                Assert.That(
-                    animator.HasState(0, Animator.StringToHash(statePath)),
-                    Is.True,
-                    statePath);
-            }
+    [Test]
+    public void AttackStateRunsDataLayerValidationBeforePlayingCombo()
+    {
+        string attackStateSource = File.ReadAllText(ProjectPath(
+            "Assets/Scrips/Characters/Player/Statemachine/Movement/State/Attack/PlayerAttackState.cs"));
+        int enterStart = attackStateSource.IndexOf("public override void Enter()");
+        int enterEnd = attackStateSource.IndexOf("public override void Exit()");
+        Assert.That(enterStart, Is.GreaterThanOrEqualTo(0));
+        Assert.That(enterEnd, Is.GreaterThan(enterStart));
+        string enterSource = attackStateSource.Substring(enterStart, enterEnd - enterStart);
 
-            // 拼错的路径必须判定为不存在，确认校验场景真的能发现配置错误。
-            Assert.That(
-                animator.HasState(0, Animator.StringToHash("Base Layer.Attack.AM_Attack99")),
-                Is.False);
-        }
-        finally
-        {
-            Object.DestroyImmediate(animatorOwner);
-        }
+        // 配置错误必须在注册输入和起手表现之前暴露，不能留下半初始化的攻击状态。
+        int validationIndex = enterSource.IndexOf("ValidateConfiguration()");
+        int executeComboIndex = enterSource.IndexOf("ExecuteCombo(0)");
+        Assert.That(validationIndex, Is.GreaterThanOrEqualTo(0));
+        Assert.That(executeComboIndex, Is.GreaterThan(validationIndex));
+
+        Assert.That(attackStateSource, Does.Contain("comboList.ValidateConfiguration()"));
     }
 
     [Test]
@@ -1076,9 +1071,8 @@ public class CombatArchitectureTests
     {
         ComboConfig comboConfig = ScriptableObject.CreateInstance<ComboConfig>();
         comboConfig.name = comboName;
-        comboConfig.ComboName = comboName;
         // 30 FPS、3 秒动画，共 90 帧，合法帧号为 1..90。
-        comboConfig.AttackClip = BuildAttackClip(30f, 3f);
+        SetComboMotionClip(comboConfig, BuildAttackClip(30f, 3f));
         comboConfig.AttackDetectionConfig = new[]
         {
             BuildValidDetection(firstFrame),
@@ -1099,8 +1093,7 @@ public class CombatArchitectureTests
     {
         ComboConfig comboConfig = ScriptableObject.CreateInstance<ComboConfig>();
         comboConfig.name = comboName;
-        comboConfig.ComboName = comboName;
-        comboConfig.AttackClip = BuildAttackClip(30f, 3f);
+        SetComboMotionClip(comboConfig, BuildAttackClip(30f, 3f));
         comboConfig.AttackDetectionConfig = new AttackDetectionConfig[0];
         comboConfig.InteractionConfig = new ComboInteractionConfig[0];
         comboConfig.AttackFeedbackConfig = new AttackFeedbackConfig[0];
@@ -1119,6 +1112,18 @@ public class CombatArchitectureTests
             "localPosition.x",
             AnimationCurve.Linear(0f, 0f, length, 0f));
         return clip;
+    }
+
+    // MotionData 的运行时访问器是只读的，测试只能按真实序列化结构写入内嵌 ClipTransition 的 Clip 字段。
+    private static void SetComboMotionClip(ComboConfig comboConfig, AnimationClip clip)
+    {
+        SerializedObject serializedCombo = new SerializedObject(comboConfig);
+        serializedCombo
+            .FindProperty("motionData")
+            .FindPropertyRelative("animation")
+            .FindPropertyRelative(ClipTransition.ClipFieldName)
+            .objectReferenceValue = clip;
+        serializedCombo.ApplyModifiedPropertiesWithoutUndo();
     }
 
     private static AttackDetectionConfig BuildValidDetection(int startFrame)
@@ -1172,9 +1177,9 @@ public class CombatArchitectureTests
             {
                 continue;
             }
-            if (comboConfig.AttackClip != null)
+            if (comboConfig.MotionData.Clip != null)
             {
-                Object.DestroyImmediate(comboConfig.AttackClip);
+                Object.DestroyImmediate(comboConfig.MotionData.Clip);
             }
             Object.DestroyImmediate(comboConfig);
         }

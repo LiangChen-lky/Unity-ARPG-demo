@@ -12,9 +12,14 @@ public class PlayerWalkingState : PlayerMovingState
 
         stateMachine.ReusableData.MovementSpeedModifier = GroundedData.WalkData.SpeedModifier;
         stateMachine.ReusableData.CurrentJumpForce = AirborneData.JumpData.WeakForce;
-        stateMachine.Player.Animator.CrossFade(
-            AnimationData.WalkingAnimationHash,
-            AnimationData.NormalizedTransitionDuration);
+
+        // TODO：Animancer 渐进迁移验证通过后删除旧 Animator 播放代码。
+        // stateMachine.Player.Animator.CrossFade(
+        //     AnimationData.WalkingAnimationHash,
+        //     AnimationData.NormalizedTransitionDuration);
+
+        stateMachine.Player.Animancer.Play(
+            GroundedData.WalkData.Animation);
     }
 
     protected override void OnMovementCanceled(InputAction.CallbackContext context)

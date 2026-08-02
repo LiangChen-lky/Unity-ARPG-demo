@@ -9571,6 +9571,7 @@ GameObject:
   - component: {fileID: 727762875}
   - component: {fileID: 727762874}
   - component: {fileID: 727762876}
+  - component: {fileID: 727762877}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -9708,6 +9709,21 @@ MonoBehaviour:
   showAttackDetection: 1
   attackDetectionColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   previewComboIndex: 2
+--- !u!114 &727762877
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 727762870}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ad50f81b1d25c441943c37a89ba23f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Kybernetik.Animancer::Animancer.AnimancerComponent
+  _Animator: {fileID: 1745118887}
+  _Transitions: {fileID: 0}
+  _ActionOnDisable: 0
 --- !u!4 &728131425 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3214405113040960797, guid: f8a70080ed072c5488e9336df5319d2b,
@@ -17276,6 +17292,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 80b1156c71e11a842a7a072def312c82, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!95 &1745118887 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: f8a70080ed072c5488e9336df5319d2b,
+    type: 3}
+  m_PrefabInstance: {fileID: 1745118882}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1746624568 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1110886043996023776, guid: f8a70080ed072c5488e9336df5319d2b,

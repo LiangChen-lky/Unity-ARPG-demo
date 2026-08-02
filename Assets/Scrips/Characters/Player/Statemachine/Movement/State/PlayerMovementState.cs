@@ -29,7 +29,13 @@ public class PlayerMovementState : IState, ITriggerHandler
     public virtual void Enter()
     {
         Debug.Log(GetType().Name);
-        
+
+        // TODO：所有动画迁移到 Animancer 后删除 Native Controller 交接逻辑。
+        // 默认让 Animator Controller 接管；已迁移状态会在派生类 Enter 中立即重新播放 Animancer。
+        stateMachine.Player.Animancer.Layers[0].StartFade(
+            0f,
+            AnimationData.FixedTransitionDuration);
+
         AddInputActionCallbacks();
     }
 

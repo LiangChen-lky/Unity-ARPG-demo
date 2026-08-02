@@ -1,6 +1,8 @@
 using UnityEngine;
+using Animancer;
 
 [RequireComponent(typeof(PlayerInput))]
+[RequireComponent(typeof(AnimancerComponent))]
 public class Player : MonoBehaviour
 {
     [field: Header("References")]
@@ -18,6 +20,7 @@ public class Player : MonoBehaviour
     [SerializeField] private MonoBehaviour weaponControllerSource;
     
     public Animator Animator { get; private set; }
+    public AnimancerComponent Animancer { get; private set; }
     public PlayerInput Input { get; private set; }
     // 玩家状态机唯一使用的武器入口，避免状态机和场景对象耦合到具体武器类。
     public IWeaponController WeaponController => weaponControllerSource as IWeaponController;
@@ -28,7 +31,9 @@ public class Player : MonoBehaviour
 
     private void Awake()
     {
-        Animator = GetComponentInChildren<Animator>();
+        // Animator 和 Animancer 必须使用同一个动画输出组件，否则原生 Controller 与 Animancer 会各自驱动一份姿势。
+        Animancer = GetComponent<AnimancerComponent>();
+        Animator = Animancer.Animator;
         Input = GetComponent<PlayerInput>();
         Rigidbody = GetComponent<Rigidbody>();
         

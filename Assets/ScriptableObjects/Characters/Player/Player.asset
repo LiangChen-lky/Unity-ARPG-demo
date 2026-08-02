@@ -90,10 +90,38 @@ MonoBehaviour:
       m_RotationOrder: 4
     <BaseRotationData>k__BackingField:
       <TargetRotationReachTime>k__BackingField: {x: 0, y: 0.14, z: 0}
+    <IdleData>k__BackingField:
+      <Animation>k__BackingField:
+        _FadeDuration: 0.1
+        _Speed: 1
+        _Events:
+          _NormalizedTimes: []
+          _Callbacks: []
+          _Names: []
+        _Clip: {fileID: 7400000, guid: 95fd85f62225d6e419e4743e24c76aa6, type: 2}
+        _NormalizedStartTime: NaN
     <WalkData>k__BackingField:
       <SpeedModifier>k__BackingField: 0.225
+      <Animation>k__BackingField:
+        _FadeDuration: 0.1
+        _Speed: 1
+        _Events:
+          _NormalizedTimes: []
+          _Callbacks: []
+          _Names: []
+        _Clip: {fileID: 7400000, guid: 750d95aac0e53694386c52b305131193, type: 2}
+        _NormalizedStartTime: NaN
     <RunData>k__BackingField:
       <SpeedModifier>k__BackingField: 1
+      <Animation>k__BackingField:
+        _FadeDuration: 0.1
+        _Speed: 1
+        _Events:
+          _NormalizedTimes: []
+          _Callbacks: []
+          _Names: []
+        _Clip: {fileID: 7400000, guid: 5003d298b2d872d45ab0c05df09e7b2a, type: 2}
+        _NormalizedStartTime: NaN
     <DashData>k__BackingField:
       <SpeedModifier>k__BackingField: 2
       <TimeToBeConsideredConsecutive>k__BackingField: 1
@@ -105,6 +133,15 @@ MonoBehaviour:
       <SpeedModifier>k__BackingField: 1.7
       <SprintToRunTime>k__BackingField: 1
       <RunToWalkTime>k__BackingField: 0.5
+      <Animation>k__BackingField:
+        _FadeDuration: 0.1
+        _Speed: 1
+        _Events:
+          _NormalizedTimes: []
+          _Callbacks: []
+          _Names: []
+        _Clip: {fileID: 7400000, guid: 71d5886b55c157c41a471c3637c9d66a, type: 2}
+        _NormalizedStartTime: NaN
     <StopData>k__BackingField:
       lightMotionData:
         clip: {fileID: 7400000, guid: cde077c8cf1c69b4e9b00a44c1d53347, type: 2}
@@ -2668,3 +2705,6 @@ MonoBehaviour:
       serializedVersion: 2
       m_Bits: 256
     <AttackBufferDuration>k__BackingField: 0.2
+  references:
+    version: 2
+    RefIds: []

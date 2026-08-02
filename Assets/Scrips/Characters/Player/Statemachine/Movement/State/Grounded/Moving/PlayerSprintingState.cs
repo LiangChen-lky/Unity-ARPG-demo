@@ -17,7 +17,13 @@ public class PlayerSprintingState : PlayerMovingState
     {
         base.Enter();
 
-        stateMachine.Player.Animator.Play(AnimationData.SprintingAnimationHash);
+        // TODO：Animancer 渐进迁移验证通过后删除旧 Animator 播放代码。
+        // stateMachine.Player.Animator.Play(
+        //     AnimationData.SprintingAnimationHash);
+
+        stateMachine.Player.Animancer.Play(
+            GroundedData.SprintData.Animation);
+
         stateMachine.ReusableData.MovementSpeedModifier = GroundedData.SprintData.SpeedModifier;
         stateMachine.ReusableData.CurrentJumpForce = AirborneData.JumpData.StrongForce;
 

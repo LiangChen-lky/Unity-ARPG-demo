@@ -1,9 +1,13 @@
 using System;
+using Animancer;
 using UnityEngine;
 
 [Serializable]
 public class PlayerJumpData
 {
+    [field: Header("动画")]
+    [field: SerializeField] public ClipTransition Animation { get; private set; }
+
     [field: SerializeField] public PlayerRotationData RotationData { get; private set; }
     [field: SerializeField] public Vector3 StationaryForce { get; private set; }
     [field: SerializeField] public Vector3 WeakForce { get; private set; }

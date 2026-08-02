@@ -96,6 +96,24 @@ public class AnimationMotionDataTests
     }
 
     [Test]
+    public void ExistingPlayerUsesJumpAndFallTransitions()
+    {
+        PlayerSO playerData = AssetDatabase.LoadAssetAtPath<PlayerSO>(
+            "Assets/ScriptableObjects/Characters/Player/Player.asset");
+        PlayerAirborneData airborneData = playerData.AirborneData;
+
+        Assert.That(airborneData.JumpData.Animation, Is.Not.Null);
+        Assert.That(airborneData.FallData.Animation, Is.Not.Null);
+        // 空中状态的动画来源必须归属于各自数据，避免继续依赖 Animator State 名称。
+        Assert.That(
+            AssetDatabase.GetAssetPath(airborneData.JumpData.Animation.Clip),
+            Is.EqualTo("Assets/Animations/Characters/Player/Clip/Movement/Airborne/Jump.anim"));
+        Assert.That(
+            AssetDatabase.GetAssetPath(airborneData.FallData.Animation.Clip),
+            Is.EqualTo("Assets/Animations/Characters/Player/Clip/Movement/Airborne/Fall.anim"));
+    }
+
+    [Test]
     public void SerializedMotionDataCanBeReadThroughPublicAccessors()
     {
         ComboConfig comboConfig = ScriptableObject.CreateInstance<ComboConfig>();

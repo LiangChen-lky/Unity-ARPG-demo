@@ -15,9 +15,11 @@ public class PlayerRollingState : PlayerLandingState
         base.Enter();
 
         stateMachine.ReusableData.MovementSpeedModifier = rollData.SpeedModifier;
-        stateMachine.Player.Animator.CrossFade(
-            AnimationData.RollingAnimationHash,
-            AnimationData.NormalizedTransitionDuration);
+        // TODO：Roll 的 Animancer 迁移验证通过后删除旧 Animator 播放代码。
+        // stateMachine.Player.Animator.CrossFade(
+        //     AnimationData.RollingAnimationHash,
+        //     AnimationData.NormalizedTransitionDuration);
+        PlayLandingAnimation(rollData.Animation, OnRollingAnimationEnded);
         stateMachine.ReusableData.ShouldSprint = false;
     }
 
@@ -33,10 +35,26 @@ public class PlayerRollingState : PlayerLandingState
         RotateTowardTargetRotation();
     }
 
-    public override void OnAnimationTransitionEvent()
-    {
-        base.OnAnimationTransitionEvent();
+    // TODO：Roll 的 Animancer 迁移验证通过后删除旧动画事件回调。
+    // public override void OnAnimationTransitionEvent()
+    // {
+    //     base.OnAnimationTransitionEvent();
+    //
+    //     if (stateMachine.ReusableData.MovementInput == Vector2.zero)
+    //     {
+    //         stateMachine.ChangeState(stateMachine.MediumStoppingState);
+    //         return;
+    //     }
+    //
+    //     OnMove();
+    // }
 
+    protected override void OnJumpStarted(InputAction.CallbackContext context)
+    {
+    }
+
+    private void OnRollingAnimationEnded()
+    {
         if (stateMachine.ReusableData.MovementInput == Vector2.zero)
         {
             stateMachine.ChangeState(stateMachine.MediumStoppingState);
@@ -44,9 +62,5 @@ public class PlayerRollingState : PlayerLandingState
         }
 
         OnMove();
-    }
-
-    protected override void OnJumpStarted(InputAction.CallbackContext context)
-    {
     }
 }

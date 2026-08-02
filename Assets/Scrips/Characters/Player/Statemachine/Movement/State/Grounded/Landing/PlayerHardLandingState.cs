@@ -12,9 +12,11 @@ public class PlayerHardLandingState : PlayerLandingState
         base.Enter();
 
         stateMachine.ReusableData.MovementSpeedModifier = 0f;
-        stateMachine.Player.Animator.CrossFade(
-            AnimationData.HardLandingAnimationHash,
-            AnimationData.NormalizedTransitionDuration);
+        // TODO：HardLand 的 Animancer 迁移验证通过后删除旧 Animator 播放代码。
+        // stateMachine.Player.Animator.CrossFade(
+        //     AnimationData.HardLandingAnimationHash,
+        //     AnimationData.NormalizedTransitionDuration);
+        PlayLandingAnimation(GroundedData.LandingData.HardAnimation, OnHardLandingAnimationEnded);
         stateMachine.Player.Input.PlayerActions.Movement.Disable();
 
         ResetVelocity();
@@ -24,6 +26,8 @@ public class PlayerHardLandingState : PlayerLandingState
     {
         base.Exit();
 
+        // 整个状态期间移动输入都是禁用的，这里是唯一的恢复点：
+        // 无论是 End 自然结束还是被其他状态提前打断，都必须走到这里，否则输入会被永久禁用。
         stateMachine.Player.Input.PlayerActions.Movement.Enable();
     }
 
@@ -39,48 +43,30 @@ public class PlayerHardLandingState : PlayerLandingState
         ResetVelocity();
     }
 
-    public override void OnAnimationExitEvent()
-    {
-        stateMachine.Player.Input.PlayerActions.Movement.Enable();
-    }
+    // TODO：HardLand 的 Animancer 迁移验证通过后删除旧动画事件回调。
+    // public override void OnAnimationTransitionEvent()
+    // {
+    //     base.OnAnimationTransitionEvent();
+    //
+    //     stateMachine.ChangeState(stateMachine.IdlingState);
+    // }
 
-    public override void OnAnimationTransitionEvent()
-    {
-        base.OnAnimationTransitionEvent();
+    // protected override void OnMove()
+    // {
+    //     if (stateMachine.ReusableData.ShouldWalk)
+    //     {
+    //         return;
+    //     }
 
-        stateMachine.ChangeState(stateMachine.IdlingState);
-    }
-
-    protected override void AddInputActionCallbacks()
-    {
-        base.AddInputActionCallbacks();
-
-        stateMachine.Player.Input.PlayerActions.Movement.started += OnHardLandingMovementStarted;
-    }
-
-    protected override void RemoveInputActionCallbacks()
-    {
-        base.RemoveInputActionCallbacks();
-
-        stateMachine.Player.Input.PlayerActions.Movement.started -= OnHardLandingMovementStarted;
-    }
-
-    protected override void OnMove()
-    {
-        if (stateMachine.ReusableData.ShouldWalk)
-        {
-            return;
-        }
-
-        stateMachine.ChangeState(stateMachine.RunningState);
-    }
+    //     stateMachine.ChangeState(stateMachine.RunningState);
+    // }
 
     protected override void OnJumpStarted(InputAction.CallbackContext context)
     {
     }
 
-    private void OnHardLandingMovementStarted(InputAction.CallbackContext context)
+    private void OnHardLandingAnimationEnded()
     {
-        OnMove();
+        stateMachine.ChangeState(stateMachine.IdlingState);
     }
 }

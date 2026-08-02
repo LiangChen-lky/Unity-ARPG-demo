@@ -114,6 +114,30 @@ public class AnimationMotionDataTests
     }
 
     [Test]
+    public void ExistingPlayerUsesLandingAndRollTransitions()
+    {
+        PlayerSO playerData = AssetDatabase.LoadAssetAtPath<PlayerSO>(
+            "Assets/ScriptableObjects/Characters/Player/Player.asset");
+        PlayerGroundedData groundedData = playerData.GroundedData;
+
+        Assert.That(groundedData.LandingData, Is.Not.Null);
+        Assert.That(groundedData.LandingData.LightAnimation, Is.Not.Null);
+        Assert.That(groundedData.LandingData.HardAnimation, Is.Not.Null);
+        Assert.That(groundedData.RollData.Animation, Is.Not.Null);
+        // 落地与翻滚的动画来源必须归属于各自数据，避免继续依赖 Animator State 名称。
+        // 事件时间由手动调整，这里只校验 Clip 指向，不做时间断言。
+        Assert.That(
+            AssetDatabase.GetAssetPath(groundedData.LandingData.LightAnimation.Clip),
+            Is.EqualTo("Assets/Animations/Characters/Player/Clip/Movement/Grounded/Landing/LightLand.anim"));
+        Assert.That(
+            AssetDatabase.GetAssetPath(groundedData.LandingData.HardAnimation.Clip),
+            Is.EqualTo("Assets/Animations/Characters/Player/Clip/Movement/Grounded/Landing/HardLand.anim"));
+        Assert.That(
+            AssetDatabase.GetAssetPath(groundedData.RollData.Animation.Clip),
+            Is.EqualTo("Assets/Animations/Characters/Player/Clip/Movement/Grounded/Landing/Roll.anim"));
+    }
+
+    [Test]
     public void SerializedMotionDataCanBeReadThroughPublicAccessors()
     {
         ComboConfig comboConfig = ScriptableObject.CreateInstance<ComboConfig>();

@@ -15,7 +15,15 @@ MonoBehaviour:
   ComboName: Base Layer.Attack.AM_Attack02
   AttackClip: {fileID: 7400000, guid: b497e9c8209ad1f45ab943163c26dfcb, type: 2}
   motionData:
-    clip: {fileID: 7400000, guid: b497e9c8209ad1f45ab943163c26dfcb, type: 2}
+    animation:
+      _FadeDuration: 0.25
+      _Speed: 1
+      _Events:
+        _NormalizedTimes: []
+        _Callbacks: []
+        _Names: []
+      _Clip: {fileID: 7400000, guid: b497e9c8209ad1f45ab943163c26dfcb, type: 2}
+      _NormalizedStartTime: NaN
     speedCurve:
       serializedVersion: 2
       m_Curve:
@@ -1995,3 +2003,6 @@ MonoBehaviour:
   SFXConfig: []
   RecoveryStartFrame: 15
   CanDashCancel: 1
+  references:
+    version: 2
+    RefIds: []

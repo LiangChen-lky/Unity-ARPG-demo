@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Animancer;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -295,7 +296,7 @@ public class AnimationMotionBakerTests
         return clip;
     }
 
-    // 通过 SerializedProperty 配置内嵌 MotionData.Clip，模拟烘焙器面对的真实序列化结构。
+    // 通过 SerializedProperty 配置内嵌 MotionData.Animation.Clip，模拟烘焙器面对的真实序列化结构。
     private static void SetComboClips(
         ComboConfig comboConfig,
         AnimationClip attackClip,
@@ -305,7 +306,10 @@ public class AnimationMotionBakerTests
 
         SerializedObject serializedCombo = new SerializedObject(comboConfig);
         SerializedProperty motionData = serializedCombo.FindProperty("motionData");
-        motionData.FindPropertyRelative("clip").objectReferenceValue = motionClip;
+        motionData
+            .FindPropertyRelative("animation")
+            .FindPropertyRelative(ClipTransition.ClipFieldName)
+            .objectReferenceValue = motionClip;
         serializedCombo.ApplyModifiedPropertiesWithoutUndo();
     }
 

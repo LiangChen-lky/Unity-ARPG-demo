@@ -1,10 +1,11 @@
 using UnityEngine;
+using Animancer;
 using UnityEngine.InputSystem;
 
 public class PlayerStoppingState : PlayerGroundedState
 {
     private readonly MotionDriver motionDriver;
-    private int stoppingAnimationHash;
+    private AnimancerState stoppingAnimationState;
 
     public PlayerStoppingState(PlayerMovementStateMachine stateMachine) : base(stateMachine)
     {
@@ -23,7 +24,7 @@ public class PlayerStoppingState : PlayerGroundedState
     public override void Exit()
     {
         motionDriver.Stop();
-        stoppingAnimationHash = 0;
+        stoppingAnimationState = null;
         base.Exit();
     }
 
@@ -31,60 +32,60 @@ public class PlayerStoppingState : PlayerGroundedState
     {
         base.Update();
 
-        Animator animator = stateMachine.Player.Animator;
-        AnimatorStateInfo stateInfo = animator.IsInTransition(0)
-            ? animator.GetNextAnimatorStateInfo(0)
-            : animator.GetCurrentAnimatorStateInfo(0);
-
-        if (stateInfo.shortNameHash == stoppingAnimationHash)
-        {
-            motionDriver.SetNormalizedTime(stateInfo.normalizedTime);
-        }
+        motionDriver.SetNormalizedTime(stoppingAnimationState.NormalizedTime);
     }
 
     public override void PhysicsUpdate()
     {
         base.PhysicsUpdate();
-        
+
         RotateTowardTargetRotation();
 
         motionDriver.PhysicsUpdate();
     }
 
-    public override void OnAnimationTransitionEvent()
-    {
-        base.OnAnimationTransitionEvent();
-        
-        stateMachine.ChangeState(stateMachine.IdlingState);
-    }
+    // public override void OnAnimationTransitionEvent()
+    // {
+    //     base.OnAnimationTransitionEvent();
 
-    public override void OnAnimationExitEvent()
-    {
-        base.OnAnimationExitEvent();
+    //     stateMachine.ChangeState(stateMachine.IdlingState);
+    // }
 
-        motionDriver.Stop();
-        ResetHorizontalVelocity();
-    }
+    // public override void OnAnimationExitEvent()
+    // {
+    //     base.OnAnimationExitEvent();
+
+    //     motionDriver.Stop();
+    //     ResetHorizontalVelocity();
+    // }
 
     #endregion
-    
+
+    #region Main Methods
+    private void OnStoppingAnimationEnded()
+    {
+        stateMachine.ChangeState(stateMachine.IdlingState);
+    }
+    #endregion
+
     #region Reusable Methods
 
     /// <summary>
-    /// 三档停止状态在播放动画后调用，锁定入场水平速度方向并绑定对应的烘焙数据。
+    /// 播放三档停止动画，并让位移曲线与同一个 AnimancerState 的播放进度保持同步。
     /// </summary>
-    protected void BeginStoppingMotion(
-        AnimationMotionData motionData,
-        int animationHash)
+    protected void PlayStoppingAnimation(AnimationMotionData motionData)
     {
-        stoppingAnimationHash = animationHash;
+        stoppingAnimationState = stateMachine.Player.Animancer.Play(motionData.Animation);
+
+        stoppingAnimationState.Events(this).OnEnd = OnStoppingAnimationEnded;
+
         motionDriver.Begin(motionData, GetPlayerHorizontalVelocity());
     }
 
     protected override void OnMovementStarted(InputAction.CallbackContext context)
     {
         base.OnMovementStarted(context);
-        
+
         OnMove();
     }
 
@@ -98,7 +99,7 @@ public class PlayerStoppingState : PlayerGroundedState
     protected override void RemoveInputActionCallbacks()
     {
         base.RemoveInputActionCallbacks();
-        
+
         stateMachine.Player.Input.PlayerActions.Movement.started -= OnMovementStarted;
     }
 

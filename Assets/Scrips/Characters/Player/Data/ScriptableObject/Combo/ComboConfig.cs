@@ -11,7 +11,7 @@ public class ComboConfig : ScriptableObject
     public AnimationClip AttackClip;
 
     [Header("动画运动数据")]
-    // 先与 AttackClip 并行保存；完成烘焙器和运行时接入后再统一动画来源。
+    // ClipTransition 已成为运动数据的动画来源；AttackClip 等攻击状态迁移后再移除。
     [SerializeField] private AnimationMotionData motionData = new AnimationMotionData();
     public AnimationMotionData MotionData => motionData;
 

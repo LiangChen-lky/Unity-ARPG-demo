@@ -1,4 +1,5 @@
 using System;
+using Animancer;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -23,7 +24,13 @@ public class AnimationMotionDataTests
         Assert.That(comboConfig.MotionData.SpeedCurve, Is.Not.Null);
         Assert.That(comboConfig.MotionData.RotationCurve, Is.Not.Null);
         Assert.That(motionData, Is.Not.Null);
-        Assert.That(motionData.FindPropertyRelative("clip"), Is.Not.Null);
+        SerializedProperty animation = motionData.FindPropertyRelative("animation");
+        Assert.That(animation, Is.Not.Null);
+        Assert.That(
+            animation.FindPropertyRelative(ClipTransition.ClipFieldName),
+            Is.Not.Null);
+        // 独立 Clip 字段必须彻底移除，避免重新出现动画双来源。
+        Assert.That(motionData.FindPropertyRelative("clip"), Is.Null);
         Assert.That(motionData.FindPropertyRelative("speedCurve"), Is.Not.Null);
         Assert.That(motionData.FindPropertyRelative("rotationCurve"), Is.Not.Null);
         Assert.That(motionData.FindPropertyRelative("bakedDuration"), Is.Not.Null);
@@ -39,6 +46,9 @@ public class AnimationMotionDataTests
         Assert.That(stopData.LightMotionData, Is.Not.Null);
         Assert.That(stopData.MediumMotionData, Is.Not.Null);
         Assert.That(stopData.HardMotionData, Is.Not.Null);
+        Assert.That(stopData.LightMotionData.Animation, Is.Not.Null);
+        Assert.That(stopData.MediumMotionData.Animation, Is.Not.Null);
+        Assert.That(stopData.HardMotionData.Animation, Is.Not.Null);
         Assert.That(stopData.LightMotionData, Is.Not.SameAs(stopData.MediumMotionData));
         Assert.That(stopData.MediumMotionData, Is.Not.SameAs(stopData.HardMotionData));
     }
@@ -73,7 +83,10 @@ public class AnimationMotionDataTests
         SerializedProperty motionData = serializedCombo.FindProperty("motionData");
 
         // 模拟后续烘焙器通过 SerializedProperty 写入离线结果。
-        motionData.FindPropertyRelative("clip").objectReferenceValue = clip;
+        motionData
+            .FindPropertyRelative("animation")
+            .FindPropertyRelative(ClipTransition.ClipFieldName)
+            .objectReferenceValue = clip;
         motionData.FindPropertyRelative("speedCurve").animationCurveValue =
             AnimationCurve.Linear(0f, 0f, 1f, 2f);
         motionData.FindPropertyRelative("rotationCurve").animationCurveValue =
@@ -82,6 +95,7 @@ public class AnimationMotionDataTests
         serializedCombo.ApplyModifiedPropertiesWithoutUndo();
 
         Assert.That(comboConfig.MotionData.Clip, Is.SameAs(clip));
+        Assert.That(comboConfig.MotionData.Animation.Clip, Is.SameAs(clip));
         Assert.That(comboConfig.MotionData.SpeedCurve.Evaluate(1f), Is.EqualTo(2f).Within(0.001f));
         Assert.That(comboConfig.MotionData.RotationCurve.Evaluate(1f), Is.EqualTo(90f).Within(0.001f));
         Assert.That(comboConfig.MotionData.BakedDuration, Is.EqualTo(1f));

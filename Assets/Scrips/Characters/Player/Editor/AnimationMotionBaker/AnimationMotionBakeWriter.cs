@@ -82,8 +82,7 @@ internal static class AnimationMotionBakeWriter
                 $"{entry.Target.DisplayName}：写回时找不到原 SerializedProperty。");
         }
 
-        motionData.FindPropertyRelative("clip").objectReferenceValue =
-            entry.Target.Clip;
+        // ClipTransition 是作者配置的唯一动画来源，烘焙器只写回由它生成的运动结果。
         motionData.FindPropertyRelative("speedCurve").animationCurveValue =
             entry.Result.SpeedCurve;
         motionData.FindPropertyRelative("rotationCurve").animationCurveValue =

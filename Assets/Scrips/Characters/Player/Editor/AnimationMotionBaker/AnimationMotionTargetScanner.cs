@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Animancer;
 using UnityEditor;
 using UnityEngine;
 
@@ -88,7 +89,9 @@ internal static class AnimationMotionTargetScanner
             }
 
             // Clip 允许为空，交由校验阶段统一报错，避免扫描结果与界面上的错误提示对不上。
-            SerializedProperty clipProperty = property.FindPropertyRelative("clip");
+            SerializedProperty animationProperty = property.FindPropertyRelative("animation");
+            SerializedProperty clipProperty =
+                animationProperty.FindPropertyRelative(ClipTransition.ClipFieldName);
             AnimationClip clip = clipProperty.objectReferenceValue as AnimationClip;
 
             targets.Add(new AnimationMotionBakeTarget(

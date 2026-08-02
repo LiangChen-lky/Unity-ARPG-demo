@@ -5,7 +5,7 @@ using UnityEngine;
 public class PlayerStopData
 {
     [Header("动画运动数据")]
-    // 三档停止动画分别持有烘焙结果，由 MotionDriver 按动画进度驱动水平速度。
+    // 每档数据同时持有 ClipTransition 与烘焙曲线，保证播放动画和运动来源一致。
     [SerializeField] private AnimationMotionData lightMotionData = new AnimationMotionData();
     [SerializeField] private AnimationMotionData mediumMotionData = new AnimationMotionData();
     [SerializeField] private AnimationMotionData hardMotionData = new AnimationMotionData();

@@ -92,7 +92,7 @@ MonoBehaviour:
       <TargetRotationReachTime>k__BackingField: {x: 0, y: 0.14, z: 0}
     <IdleData>k__BackingField:
       <Animation>k__BackingField:
-        _FadeDuration: 0.1
+        _FadeDuration: 0.2
         _Speed: 1
         _Events:
           _NormalizedTimes: []
@@ -103,7 +103,7 @@ MonoBehaviour:
     <WalkData>k__BackingField:
       <SpeedModifier>k__BackingField: 0.225
       <Animation>k__BackingField:
-        _FadeDuration: 0.1
+        _FadeDuration: 0.2
         _Speed: 1
         _Events:
           _NormalizedTimes: []
@@ -134,7 +134,7 @@ MonoBehaviour:
       <SprintToRunTime>k__BackingField: 1
       <RunToWalkTime>k__BackingField: 0.5
       <Animation>k__BackingField:
-        _FadeDuration: 0.1
+        _FadeDuration: 0.2
         _Speed: 1
         _Events:
           _NormalizedTimes: []
@@ -144,7 +144,15 @@ MonoBehaviour:
         _NormalizedStartTime: NaN
     <StopData>k__BackingField:
       lightMotionData:
-        clip: {fileID: 7400000, guid: cde077c8cf1c69b4e9b00a44c1d53347, type: 2}
+        animation:
+          _FadeDuration: 0.25
+          _Speed: 1
+          _Events:
+            _NormalizedTimes: []
+            _Callbacks: []
+            _Names: []
+          _Clip: {fileID: 7400000, guid: cde077c8cf1c69b4e9b00a44c1d53347, type: 2}
+          _NormalizedStartTime: NaN
         speedCurve:
           serializedVersion: 2
           m_Curve:
@@ -996,7 +1004,15 @@ MonoBehaviour:
           m_RotationOrder: 4
         bakedDuration: 1.5000001
       mediumMotionData:
-        clip: {fileID: 7400000, guid: 8abee0e4431fc17408e498ffc35c741d, type: 2}
+        animation:
+          _FadeDuration: 0.25
+          _Speed: 1
+          _Events:
+            _NormalizedTimes: []
+            _Callbacks: []
+            _Names: []
+          _Clip: {fileID: 7400000, guid: 8abee0e4431fc17408e498ffc35c741d, type: 2}
+          _NormalizedStartTime: NaN
         speedCurve:
           serializedVersion: 2
           m_Curve:
@@ -1758,7 +1774,16 @@ MonoBehaviour:
           m_RotationOrder: 4
         bakedDuration: 1.3333334
       hardMotionData:
-        clip: {fileID: 7400000, guid: 8fbcc3de6ef92d84ca80cf2d38c4709b, type: 2}
+        animation:
+          _FadeDuration: 0.25
+          _Speed: 1
+          _Events:
+            _NormalizedTimes:
+            - 1
+            _Callbacks: []
+            _Names: []
+          _Clip: {fileID: 7400000, guid: 8fbcc3de6ef92d84ca80cf2d38c4709b, type: 2}
+          _NormalizedStartTime: NaN
         speedCurve:
           serializedVersion: 2
           m_Curve:

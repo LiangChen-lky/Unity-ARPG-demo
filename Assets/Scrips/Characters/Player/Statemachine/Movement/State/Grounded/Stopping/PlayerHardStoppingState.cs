@@ -10,13 +10,12 @@ public class PlayerHardStoppingState : PlayerStoppingState
     {
         base.Enter();
         
-        stateMachine.Player.Animator.CrossFadeInFixedTime(
-            AnimationData.HardStoppingAnimationHash,
-            AnimationData.FixedTransitionDuration);
+        // TODO：Animancer 渐进迁移验证通过后删除旧 Animator 播放代码。
+        // stateMachine.Player.Animator.CrossFadeInFixedTime(
+        //     AnimationData.HardStoppingAnimationHash,
+        //     AnimationData.FixedTransitionDuration);
 
-        BeginStoppingMotion(
-            GroundedData.StopData.HardMotionData,
-            AnimationData.HardStoppingAnimationHash);
+        PlayStoppingAnimation(GroundedData.StopData.HardMotionData);
 
         stateMachine.ReusableData.CurrentJumpForce = AirborneData.JumpData.StrongForce;
     }

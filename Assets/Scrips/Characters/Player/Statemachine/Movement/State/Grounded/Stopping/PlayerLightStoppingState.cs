@@ -8,12 +8,11 @@ public class PlayerLightStoppingState : PlayerStoppingState
     {
         base.Enter();
 
-        stateMachine.Player.Animator.CrossFadeInFixedTime(
-            AnimationData.LightStoppingAnimationHash,
-            AnimationData.FixedTransitionDuration);
-        BeginStoppingMotion(
-            GroundedData.StopData.LightMotionData,
-            AnimationData.LightStoppingAnimationHash);
+        // TODO：Animancer 渐进迁移验证通过后删除旧 Animator 播放代码。
+        // stateMachine.Player.Animator.CrossFadeInFixedTime(
+        //     AnimationData.LightStoppingAnimationHash,
+        //     AnimationData.FixedTransitionDuration);
+        PlayStoppingAnimation(GroundedData.StopData.LightMotionData);
 
         stateMachine.ReusableData.CurrentJumpForce = AirborneData.JumpData.WeakForce;
     }

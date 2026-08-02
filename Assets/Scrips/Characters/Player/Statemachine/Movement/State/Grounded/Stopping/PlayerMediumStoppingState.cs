@@ -10,13 +10,12 @@ public class PlayerMediumStoppingState : PlayerStoppingState
     {
         base.Enter();
 
-        stateMachine.Player.Animator.CrossFadeInFixedTime(
-            AnimationData.MediumStoppingAnimationHash,
-            AnimationData.FixedTransitionDuration);
+        // TODO：Animancer 渐进迁移验证通过后删除旧 Animator 播放代码。
+        // stateMachine.Player.Animator.CrossFadeInFixedTime(
+        //     AnimationData.MediumStoppingAnimationHash,
+        //     AnimationData.FixedTransitionDuration);
 
-        BeginStoppingMotion(
-            GroundedData.StopData.MediumMotionData,
-            AnimationData.MediumStoppingAnimationHash);
+        PlayStoppingAnimation(GroundedData.StopData.MediumMotionData);
 
         stateMachine.ReusableData.CurrentJumpForce = AirborneData.JumpData.WeakForce;
     }
